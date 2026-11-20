@@ -1,0 +1,55 @@
+{
+  "model_name": "InceptionV3 Benchmark",
+  "timestamp": "2026-11-16T22:12:48.635954",
+  "input_resolution": "200x200x3",
+  "hyperparameters": {
+    "epochs": 6,
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "optimizer": "Adam"
+  },
+  "test_metrics": {
+    "accuracy": 0.9777777777777777,
+    "macro_f1": 0.9778375906585738,
+    "per_class": {
+      "crazing": {
+        "precision": 0.9782608695652174,
+        "recall": 1.0,
+        "f1-score": 0.989010989010989,
+        "support": 45.0
+      },
+      "inclusion": {
+        "precision": 1.0,
+        "recall": 0.9555555555555556,
+        "f1-score": 0.9772727272727273,
+        "support": 45.0
+      },
+      "patches": {
+        "precision": 0.9183673469387755,
+        "recall": 1.0,
+        "f1-score": 0.9574468085106383,
+        "support": 45.0
+      },
+      "pitted_surface": {
+        "precision": 0.9777777777777777,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.9777777777777777,
+        "support": 45.0
+      },
+      "rolled-in_scale": {
+        "precision": 1.0,
+        "recall": 0.9333333333333333,
+        "f1-score": 0.9655172413793104,
+        "support": 45.0
+      },
+      "scratches": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      }
+    },
+    "mean_latency_ms": 192.85050188652502,
+    "throughput_fps": 5.185363741435369
+  }
+}

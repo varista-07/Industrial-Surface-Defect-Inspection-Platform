@@ -1,0 +1,14 @@
+category,condition,train_acc,val_acc,val_loss,notes
+Initialization,zeros,16.67%,16.67%,1.7920,Zeros fails due to symmetry; He/Xavier break symmetry effectively
+Initialization,random,51.98%,54.07%,1.1887,Zeros fails due to symmetry; He/Xavier break symmetry effectively
+Initialization,xavier,51.19%,39.63%,1.3796,Zeros fails due to symmetry; He/Xavier break symmetry effectively
+Initialization,he,61.75%,58.15%,1.1022,Zeros fails due to symmetry; He/Xavier break symmetry effectively
+Normalization,"MinMax [0, 1]",53.81%,50.74%,1.1591,Standardized/MinMax enables stable gradients; Raw requires tiny lr
+Normalization,"Raw [0, 255]",29.44%,30.74%,1.5664,Standardized/MinMax enables stable gradients; Raw requires tiny lr
+Normalization,Standardized Z-Score,79.37%,66.67%,1.5997,Standardized/MinMax enables stable gradients; Raw requires tiny lr
+Regularization,None (Overfitting risk),58.02%,54.81%,1.2015,Dropout and L2 reduce train-val generalization gap
+Regularization,L2 Regularization (1e-3),60.48%,55.19%,1.1632,Dropout and L2 reduce train-val generalization gap
+Regularization,Inverted Dropout (0.3),34.44%,34.44%,1.5001,Dropout and L2 reduce train-val generalization gap
+Learning Rate,Low (0.001),51.83%,48.89%,1.3524,Optimal lr balances convergence speed and stability
+Learning Rate,Optimal (0.02),52.38%,50.74%,1.2809,Optimal lr balances convergence speed and stability
+Learning Rate,High (0.50),16.67%,16.67%,1.8074,Optimal lr balances convergence speed and stability

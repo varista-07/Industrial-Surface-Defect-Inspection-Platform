@@ -1,0 +1,13 @@
+{
+  "model_name": "Lightweight U-Net",
+  "timestamp": "2026-11-16T23:30:02.624050",
+  "weak_supervision": true,
+  "label_source": "VOC bounding boxes refined with local Otsu thresholding",
+  "caveat": "Evaluated against synthetic weak pseudo-masks; true pixel-level human ground truth does not exist in NEU-DET.",
+  "test_metrics": {
+    "mean_iou": 0.12923021614551544,
+    "mean_dice": 0.19504490494728088,
+    "mean_latency_ms": 27.3649377777474,
+    "throughput_fps": 36.543112508488115
+  }
+}

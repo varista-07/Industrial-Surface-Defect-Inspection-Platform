@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Industrial Surface Defect Inspection Platform | CSAI3027P</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Navigation / Industrial Header -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+          <line x1="7" y1="2" x2="7" y2="22"></line>
+          <line x1="17" y1="2" x2="17" y2="22"></line>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">SURFACE DEFECT INSPECTION PLATFORM</h1>
+        <p class="brand-subtitle">CSAI3027P Deep Learning PBL &bull; Manufacturing Quality Assurance &bull; NEU-DET</p>
+      </div>
+    </div>
+    <div class="system-status-pills">
+      <span class="status-pill status-online"><span class="dot"></span> Backend Online</span>
+      <span class="status-pill"><span class="badge">Model</span> ResNet50 + XAI</span>
+      <span class="status-pill"><span class="badge">Device</span> CPU Optimized</span>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+
+    <!-- Control & Configuration Bar -->
+    <section class="control-panel card">
+      <div class="slider-control-group">
+        <div class="slider-label-row">
+          <label for="thresholdSlider"><strong>Quality Control Confidence Threshold:</strong></label>
+          <span class="threshold-badge" id="thresholdValue">60%</span>
+        </div>
+        <input type="range" id="thresholdSlider" min="20" max="95" value="60" step="1">
+        <p class="slider-help">Defects predicted above this threshold trigger a QC FAIL verdict. Below this threshold, samples trigger an UNCERTAIN / Out-of-Distribution warning.</p>
+      </div>
+    </section>
+
+    <!-- Interactive Sample Images Gallery -->
+    <section class="samples-section card">
+      <div class="section-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          Try Test Split Sample Images
+        </h2>
+        <span class="hint-text">Click any sample below to load and inspect immediately:</span>
+      </div>
+      <div class="sample-grid" id="sampleGallery">
+        <!-- Injected via JavaScript from /samples -->
+      </div>
+    </section>
+
+    <!-- Upload and Analysis Area -->
+    <div class="main-layout-grid">
+      <!-- Upload Column -->
+      <section class="upload-section card">
+        <div class="section-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Surface Image Upload
+          </h2>
+          <span class="badge">JPEG &bull; PNG &bull; BMP (&le; 5MB)</span>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.bmp" hidden>
+          <div class="drop-zone-prompt" id="dropPrompt">
+            <div class="upload-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                <path d="M12 12v9"></path>
+                <path d="m8 16 4-4 4 4"></path>
+              </svg>
+            </div>
+            <p class="drop-main-text">Drag & drop steel surface image here, or <span class="highlight">browse</span></p>
+            <p class="drop-sub-text">Automatic grayscale conversion and 200x200 bilinear rescaling applied</p>
+          </div>
+          <!-- Preview container -->
+          <div class="drop-preview-container" id="previewContainer" style="display:none;">
+            <img id="imagePreview" alt="Upload Preview">
+            <button type="button" class="btn-clear" id="btnClear" title="Clear image">&times;</button>
+          </div>
+        </div>
+
+        <div class="upload-actions">
+          <button type="button" class="btn btn-primary" id="btnAnalyze" disabled>
+            <span class="btn-text">ANALYZE SURFACE DEFECT</span>
+            <span class="btn-spinner" id="analyzeSpinner" style="display:none;"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Results Summary Column -->
+      <section class="results-section card" id="resultsCard" style="display: none;">
+        <div class="section-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Inspection Decision & Metrics
+          </h2>
+          <span class="timestamp-badge" id="latencyBadge">0.0 ms</span>
+        </div>
+
+        <!-- Verdict Banner -->
+        <div class="verdict-card" id="verdictCard">
+          <div class="verdict-icon" id="verdictIcon">!</div>
+          <div class="verdict-content">
+            <h3 class="verdict-title" id="verdictTitle">ANALYZING...</h3>
+            <p class="verdict-desc" id="verdictDesc"></p>
+          </div>
+        </div>
+
+        <!-- Key Metrics Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="metric-label">IDENTIFIED DEFECT</span>
+            <span class="metric-value defect-highlight" id="metricClass">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">CONFIDENCE</span>
+            <span class="metric-value" id="metricConfidence">--%</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">SEVERITY / AREA</span>
+            <span class="metric-value" id="metricSeverity">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">INFERENCE TIME</span>
+            <span class="metric-value" id="metricLatency">-- ms</span>
+          </div>
+        </div>
+
+        <!-- Synthetic Inspection Report -->
+        <div class="inspection-report-box">
+          <div class="report-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            SYNTHETIC QC INSPECTION NOTE (TRANSFORMER DERIVED)
+          </div>
+          <p class="report-body" id="inspectionReportText">--</p>
+        </div>
+
+        <!-- Class Probabilities Horizontal Bar Chart -->
+        <div class="probability-chart-container">
+          <div class="chart-header">
+            <span>6-CLASS PROBABILITY DISTRIBUTION</span>
+          </div>
+          <div class="prob-bars" id="probBarsContainer">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Visual Inspection Quad-View Matrix -->
+    <section class="visualizations-matrix card" id="visualsCard" style="display: none;">
+      <div class="section-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Multi-Modal Explainability & Localization Matrix
+        </h2>
+        <span class="badge">Original &bull; Detection Box &bull; Grad-CAM &bull; Pseudo-Mask</span>
+      </div>
+
+      <div class="quad-grid">
+        <!-- View 1: Original Image -->
+        <div class="quad-item">
+          <div class="quad-label">1. Original Steel Strip Surface</div>
+          <div class="quad-viewport">
+            <img id="viewOriginal" alt="Original Steel Surface">
+          </div>
+        </div>
+
+        <!-- View 2: Detection Bounding Box -->
+        <div class="quad-item">
+          <div class="quad-label">2. Object Detector Bounding Box</div>
+          <div class="quad-viewport">
+            <img id="viewBox" alt="Detection Bounding Box">
+          </div>
+        </div>
+
+        <!-- View 3: Grad-CAM Heatmap -->
+        <div class="quad-item">
+          <div class="quad-label">3. Grad-CAM Class Explanation (conv5_block3)</div>
+          <div class="quad-viewport">
+            <img id="viewGradcam" alt="Grad-CAM Heatmap Overlay">
+          </div>
+        </div>
+
+        <!-- View 4: Segmentation Mask -->
+        <div class="quad-item">
+          <div class="quad-label">4. U-Net Morphological Defect Mask</div>
+          <div class="quad-viewport">
+            <img id="viewSegmentation" alt="Segmentation Mask Overlay">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Live Viva & Documentation Footer -->
+  <footer class="bottom-footer">
+    <p>Automated Defect Inspection Platform &bull; CSAI3027P Deep Learning PBL Project 02 &bull; Evaluation: 23 November 2026</p>
+    <p class="sub-credit">Architecture: ResNet50 Two-Stage Fine-Tuning &bull; Custom Detector &bull; U-Net Weak Segmentation &bull; Pure NumPy Fundamentals</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

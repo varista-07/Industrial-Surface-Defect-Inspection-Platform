@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspection Platform Metrics Dashboard | CSAI3027P</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 2rem; }
+    h1, h2, h3 { color: #38bdf8; margin-bottom: 0.5rem; }
+    .header { border-bottom: 1px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    .metric-val { font-size: 2rem; font-weight: 700; color: #10b981; font-family: monospace; }
+    .metric-sub { font-size: 0.85rem; color: #94a3b8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid #334155; }
+    th { background: #0f172a; color: #38bdf8; }
+    .img-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+    .img-card img { width: 100%; border-radius: 8px; border: 1px solid #334155; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Industrial Surface Defect Inspection Platform - Metrics Dashboard</h1>
+    <p>Comprehensive Performance, Learning Curves, and Ablation Summary &bull; CSAI3027P PBL Project 02</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="metric-sub">PRIMARY CLASSIFIER (RESNET50)</div>
+      <div class="metric-val">100.00%</div>
+      <div class="metric-sub">Test Accuracy (270 Unseen Images)</div>
+    </div>
+    <div class="card">
+      <div class="metric-sub">MACRO F1 SCORE</div>
+      <div class="metric-val">1.0000</div>
+      <div class="metric-sub">100% Balanced Across All 6 Classes</div>
+    </div>
+    <div class="card">
+      <div class="metric-sub">INFERENCE SPEED (CPU)</div>
+      <div class="metric-val">260.4 ms</div>
+      <div class="metric-sub">Full ResNet50 Inference on CPU</div>
+    </div>
+    <div class="card">
+      <div class="metric-sub">DEFECT DETECTOR mAP@0.5</div>
+      <div class="metric-val">24.07%</div>
+      <div class="metric-sub">Mean IoU: 0.3292 &bull; Pitted Surface: 86.7%</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 2rem;">
+    <h2>Architectural Benchmark Comparison</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Model Architecture</th>
+          <th>Paradigm</th>
+          <th>Input Shape</th>
+          <th>Trainable Params</th>
+          <th>Test Accuracy</th>
+          <th>Macro F1</th>
+          <th>CPU Latency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>From-Scratch MLP</strong></td>
+          <td>NumPy Pure Backprop</td>
+          <td>32x32 (1024 flat)</td>
+          <td>279,238</td>
+          <td>56.67%</td>
+          <td>0.548</td>
+          <td>0.4 ms</td>
+        </tr>
+        <tr>
+          <td><strong>InceptionV3 Benchmark</strong></td>
+          <td>Transfer Learning (Frozen)</td>
+          <td>200x200x3</td>
+          <td>526,086</td>
+          <td>97.78%</td>
+          <td>0.9778</td>
+          <td>192.8 ms</td>
+        </tr>
+        <tr>
+          <td><strong>ResNet50 (Frozen Only Ablation)</strong></td>
+          <td>Feature Extractor Only</td>
+          <td>200x200x3</td>
+          <td>526,086</td>
+          <td>100.00%</td>
+          <td>1.0000</td>
+          <td>245.1 ms</td>
+        </tr>
+        <tr>
+          <td><strong>ResNet50 (No Augmentation)</strong></td>
+          <td>Two-Stage Transfer</td>
+          <td>200x200x3</td>
+          <td>~5,000,000</td>
+          <td>100.00%</td>
+          <td>1.0000</td>
+          <td>258.7 ms</td>
+        </tr>
+        <tr>
+          <td><strong>ResNet50 (With Class Weights)</strong></td>
+          <td>Inverse Frequency Weighted</td>
+          <td>200x200x3</td>
+          <td>~5,000,000</td>
+          <td>100.00%</td>
+          <td>1.0000</td>
+          <td>261.2 ms</td>
+        </tr>
+        <tr>
+          <td><strong>ResNet50 (Final Production)</strong></td>
+          <td>Two-Stage + Augmentation</td>
+          <td>200x200x3</td>
+          <td>~5,000,000</td>
+          <td><strong style="color:#10b981;">100.00%</strong></td>
+          <td><strong style="color:#10b981;">1.0000</strong></td>
+          <td>260.4 ms</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid" style="margin-bottom: 2rem;">
+    <div class="card">
+      <h2>Industrial False-Reject Rate (FRR) & Triage Analysis</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Confidence Threshold</th>
+            <th>Flagged Uncertain Samples</th>
+            <th>Triage Escalation Rate</th>
+            <th>Defect Miss Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>&ge; 0.50</td><td>0 / 270</td><td>0.00%</td><td>0.00%</td></tr>
+          <tr><td>&ge; 0.60 (Standard)</td><td>0 / 270</td><td>0.00%</td><td>0.00%</td></tr>
+          <tr><td>&ge; 0.70</td><td>0 / 270</td><td>0.00%</td><td>0.00%</td></tr>
+          <tr><td>&ge; 0.80</td><td>0 / 270</td><td>0.00%</td><td>0.00%</td></tr>
+          <tr><td>&ge; 0.90 (Ultra-Strict)</td><td>1 / 270</td><td>0.37%</td><td>0.37%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Cryptographic Data Integrity & Leakage Audit</h2>
+      <table>
+        <thead>
+          <tr><th>Audit Metric</th><th>Empirical Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Total Raw Images</td><td>1,800 images</td></tr>
+          <tr><td>Unique SHA-256 Hashes</td><td>1,799 unique</td></tr>
+          <tr><td>Detected Duplicate Pair</td><td><code>patches_101.jpg</code> = <code>patches_105.jpg</code></td></tr>
+          <tr><td>Split Allocation</td><td>Both placed strictly in Train split</td></tr>
+          <tr><td>Cross-Split Leakage</td><td><strong style="color:#10b981;">0.00% (Zero Leakage Verified)</strong></td></tr>
+          <tr><td>Multi-Box Frequency</td><td>73.17% images have &ge; 2 bounding boxes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Visual Analytics & Experimental Figures</h2>
+  <div class="img-grid">
+    <div class="card img-card">
+      <h3>ResNet50 Confusion Matrix (Test Split)</h3>
+      <img src="figures/resnet50_confusion_matrix.png" alt="Confusion Matrix">
+    </div>
+    <div class="card img-card">
+      <h3>ResNet50 Two-Stage Learning Curves</h3>
+      <img src="figures/resnet50_learning_curves.png" alt="Learning Curves">
+    </div>
+    <div class="card img-card">
+      <h3>ResNet50 Controlled Ablations</h3>
+      <img src="figures/resnet50_ablations.png" alt="Ablation Comparison">
+    </div>
+    <div class="card img-card">
+      <h3>Grad-CAM Multi-Class Explanations</h3>
+      <img src="figures/gradcam_explanations.png" alt="Grad-CAM">
+    </div>
+    <div class="card img-card">
+      <h3>Defect Object Detection Predictions</h3>
+      <img src="figures/detection_sample_predictions.png" alt="Detection Predictions">
+    </div>
+    <div class="card img-card">
+      <h3>Weak Pseudo-Mask U-Net Segmentation</h3>
+      <img src="figures/segmentation_pseudo_mask_samples.png" alt="U-Net Segmentation">
+    </div>
+    <div class="card img-card">
+      <h3>2D Conv Filters & Feature Maps</h3>
+      <img src="figures/conv2d_filters_and_feature_maps.png" alt="Conv Visualization">
+    </div>
+    <div class="card img-card">
+      <h3>Transformer Inspection Attention Weights</h3>
+      <img src="figures/transformer_attention_weights.png" alt="Transformer Attention">
+    </div>
+    <div class="card img-card">
+      <h3>Conv-VAE Latent Space & Reconstructions</h3>
+      <img src="figures/vae_reconstructions_and_latent_space.png" alt="VAE Latent Space">
+    </div>
+    <div class="card img-card">
+      <h3>SVD Low-Rank Spectral Analysis</h3>
+      <img src="figures/svd_compression_analysis.png" alt="SVD Analysis">
+    </div>
+    <div class="card img-card">
+      <h3>Optimizer Convergence Benchmark (NumPy)</h3>
+      <img src="figures/optimizers_comparison_loss_curves.png" alt="Optimizers Comparison">
+    </div>
+    <div class="card img-card">
+      <h3>Activation Gradients & Vanishing Decay</h3>
+      <img src="figures/activation_functions_and_gradients.png" alt="Activations Comparison">
+    </div>
+  </div>
+</body>
+</html>

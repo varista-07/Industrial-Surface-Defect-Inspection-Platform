@@ -1,0 +1,48 @@
+{
+  "dataset_name": "NEU-DET",
+  "total_images": 1800,
+  "total_unique_sha256": 1799,
+  "total_unique_md5": 1799,
+  "duplicate_images_count": 2,
+  "duplicate_hash_clusters": 1,
+  "duplicate_sets": {
+    "4d2de82731b86cdbc7a66f2a9bfb01074bb4cb65e47bccf06b66470d53857071": [
+      "patches_101.jpg",
+      "patches_105.jpg"
+    ]
+  },
+  "splits": {
+    "train_count": 1260,
+    "val_count": 270,
+    "test_count": 270,
+    "train_unique_hashes": 1259,
+    "val_unique_hashes": 270,
+    "test_unique_hashes": 270
+  },
+  "leakage_audit": {
+    "train_val_leak_count": 0,
+    "train_test_leak_count": 0,
+    "val_test_leak_count": 0,
+    "is_leak_free": true
+  },
+  "multi_box_distribution": {
+    "1": 483,
+    "2": 673,
+    "3": 390,
+    "4": 154,
+    "5": 59,
+    "6": 22,
+    "7": 9,
+    "8": 6,
+    "9": 4
+  },
+  "boxes_per_class": {
+    "crazing": 689,
+    "patches": 881,
+    "inclusion": 1011,
+    "pitted_surface": 432,
+    "rolled-in_scale": 628,
+    "scratches": 548
+  },
+  "total_boxes": 4189
+}

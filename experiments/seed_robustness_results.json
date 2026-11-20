@@ -1,0 +1,27 @@
+{
+  "seeds_evaluated": {
+    "seed_42": 1.0,
+    "seed_101": 0.9593,
+    "seed_202": 0.9704
+  },
+  "n_seeds": 3,
+  "mean_accuracy": 0.9766,
+  "mean_accuracy_pct": "97.66%",
+  "std_accuracy": 0.021,
+  "standard_error": 0.0121,
+  "confidence_level": 0.95,
+  "t_critical": 4.3027,
+  "ci_95": [
+    0.9243,
+    1.0
+  ],
+  "ci_95_str": "[92.43%, 100.00%]",
+  "leakage_audit_summary": {
+    "duplicate_pair_isolated": [
+      "patches_101.jpg",
+      "patches_105.jpg"
+    ],
+    "cross_split_hash_collisions": 0,
+    "test_set_untouched_in_training": true
+  }
+}

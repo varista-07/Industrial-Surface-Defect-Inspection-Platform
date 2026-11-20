@@ -1,0 +1,21 @@
+{
+  "model_name": "From-Scratch MLP (NumPy)",
+  "architecture": "1024 -> 256 -> 64 -> 6",
+  "total_parameters": 279238,
+  "hyperparameters": {
+    "epochs": 60,
+    "batch_size": 32,
+    "learning_rate": 0.02,
+    "optimizer": "SGD_Momentum_0.9",
+    "dropout": 0.2,
+    "l2_reg": 0.0001,
+    "image_resolution": "32x32"
+  },
+  "metrics": {
+    "final_train_loss": 1.3420979072669237,
+    "final_val_loss": 1.1566460132598877,
+    "final_val_acc": 0.562962962962963,
+    "test_loss": 1.154460072517395,
+    "test_accuracy": 0.5666666666666667
+  }
+}

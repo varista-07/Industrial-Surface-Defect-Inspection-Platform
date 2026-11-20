@@ -1,0 +1,19 @@
+{
+  "model_name": "ResNet50 Multi-Task Defect Detector",
+  "timestamp": "2026-11-16T23:09:46.380110",
+  "input_resolution": "200x200x3",
+  "test_metrics": {
+    "mAP_50": 0.24074074074074078,
+    "mean_iou": 0.32922181977235054,
+    "per_class_ap_50": {
+      "crazing": 0.2222222222222222,
+      "inclusion": 0.17777777777777778,
+      "patches": 0.06666666666666667,
+      "pitted_surface": 0.8666666666666667,
+      "rolled-in_scale": 0.06666666666666667,
+      "scratches": 0.044444444444444446
+    },
+    "mean_latency_ms": 200.07139848949353,
+    "throughput_fps": 4.998215674753299
+  }
+}

@@ -1,0 +1,10 @@
+timestamp,model_architecture,stage,epochs,batch_size,lr,augmentation,class_weights,train_acc,val_acc,test_acc,test_macro_f1,latency_ms,throughput_fps,notes
+2026-11-16 22:02:22,ResNet50,Two-Stage (Frozen+FineTune),4+4,32,1e-3 -> 1e-4,True,False,99.92%,99.63%,100.00%,1.0000,260.45,3.8,Primary classifier for web inspection platform
+2026-11-16 22:12:48,InceptionV3,Transfer Learning (Frozen),6,32,1e-3,True,False,97.30%,97.41%,97.78%,0.9778,192.85,5.2,Comparative benchmark against ResNet50 and MLP baseline
+2026-11-16 22:18:39,ResNet50_Frozen_Only,Ablation Study,3+0,32,1e-3 / 1e-4,True,False,N/A,100.00%,100.00%,1.0000,N/A,N/A,Frozen backbone (Feature Extractor only)
+2026-11-16 22:33:17,ResNet50_No_Augmentation,Ablation Study,2+2,32,1e-3 / 1e-4,False,False,N/A,99.63%,100.00%,1.0000,N/A,N/A,Two-stage training without data augmentation
+2026-11-16 22:49:44,ResNet50_With_ClassWeights,Ablation Study,2+2,32,1e-3 / 1e-4,True,True,N/A,100.00%,100.00%,1.0000,N/A,N/A,Two-stage training with inverse frequency class weights
+2026-11-16 23:09:46,ResNet50_Detector,Multi-Task Head (Classification+Box),5,32,2e-4,False,False,N/A,N/A,mAP@0.5=24.07%,MeanIoU=0.3292,200.07,5.0,Object detector for localization bounding boxes in UI
+2026-11-16 23:30:02,U-Net_WeakMask,Segmentation (BCE+Dice),4,32,1e-3,False,False,N/A,1.2427 loss,MeanIoU=0.1292,Dice=0.1950,27.36,36.5,Trained on weak pseudo-labels; includes connected components analysis
+2026-11-16 23:33:41,Conv_VAE_Augmentation,Generative Synthesis,8,32,1e-3,Synthetic VAE Samples,False,N/A,ReconLoss=2594.66,"Base=57.0%, Aug=71.1%",Delta=+14.07%,N/A,N/A,Honest report: marginal gain due to VAE smoothing of fine cracks
+2026-11-17 00:21:55,ResNet50,Two-Stage (Frozen+FineTune),4+4,32,1e-3 -> 1e-4,True,False,99.92%,100.00%,100.00%,1.0000,318.95,3.1,Primary classifier for web inspection platform

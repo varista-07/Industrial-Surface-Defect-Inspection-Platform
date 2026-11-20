@@ -1,0 +1,141 @@
+{
+  "model_name": "ResNet50 Two-Stage Transfer Learning",
+  "timestamp": "2026-11-17T00:21:55.627137",
+  "input_resolution": "200x200x3",
+  "hyperparameters": {
+    "stage1_epochs": 4,
+    "stage2_epochs": 4,
+    "batch_size": 32,
+    "stage1_lr": 0.001,
+    "stage2_lr": 0.0001,
+    "optimizer": "Adam",
+    "augmentation": true,
+    "class_weights": false
+  },
+  "test_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "crazing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "inclusion": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "patches": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "pitted_surface": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "rolled-in_scale": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "scratches": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      }
+    },
+    "mean_latency_ms": 318.9529913196446,
+    "throughput_fps": 3.1352582581607824,
+    "confusion_matrix": [
+      [
+        45,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        45,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        45,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        45,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        45,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        45
+      ]
+    ],
+    "false_reject_rate_analysis": {
+      "threshold_0.50": {
+        "threshold": 0.5,
+        "uncertain_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.60": {
+        "threshold": 0.6,
+        "uncertain_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.70": {
+        "threshold": 0.7,
+        "uncertain_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.80": {
+        "threshold": 0.8,
+        "uncertain_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.90": {
+        "threshold": 0.9,
+        "uncertain_samples": 1,
+        "triage_escalation_rate": 0.003703703703703704,
+        "missed_defect_rate": 0.003703703703703704
+      }
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "report_name": "CSAI3027P Industrial Surface Defect Inspection Platform - Test Metrics",
+  "timestamp": "2026-11-20T13:55:39.086284",
+  "evaluation_dataset": "NEU-DET (Held-out Test Split)",
+  "total_test_samples": 270,
+  "primary_classifier": {
+    "architecture": "ResNet50 (Two-Stage Transfer Learning with Frozen BatchNormalization)",
+    "test_accuracy": 1.0,
+    "test_accuracy_percentage": "100.00%",
+    "test_macro_f1": 1.0,
+    "mean_latency_ms": 293.96,
+    "throughput_fps": 3.4,
+    "per_class": {
+      "crazing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "inclusion": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "patches": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "pitted_surface": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "rolled-in_scale": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      },
+      "scratches": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 45.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        45,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        45,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        45,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        45,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        45,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        45
+      ]
+    ],
+    "false_reject_rate_analysis": {
+      "threshold_0.50": {
+        "threshold": 0.5,
+        "flagged_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.60": {
+        "threshold": 0.6,
+        "flagged_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.70": {
+        "threshold": 0.7,
+        "flagged_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.80": {
+        "threshold": 0.8,
+        "flagged_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      },
+      "threshold_0.90": {
+        "threshold": 0.9,
+        "flagged_samples": 0,
+        "triage_escalation_rate": 0.0,
+        "missed_defect_rate": 0.0
+      }
+    }
+  },
+  "defect_detector": {
+    "architecture": "ResNet50 Multi-Task Shared Bounding Box Head",
+    "mAP_50": 0.24074074074074078,
+    "mean_iou": 0.32922181977235054,
+    "per_class_ap_50": {
+      "crazing": 0.2222222222222222,
+      "inclusion": 0.17777777777777778,
+      "patches": 0.06666666666666667,
+      "pitted_surface": 0.8666666666666667,
+      "rolled-in_scale": 0.06666666666666667,
+      "scratches": 0.044444444444444446
+    },
+    "throughput_fps": 4.998215674753299
+  },
+  "unet_segmentation": {
+    "architecture": "Lightweight U-Net (ResNet Encoder, Weak Pseudo-Masks)",
+    "mean_iou": 0.12923021614551544,
+    "dice_score": 0.19504490494728088,
+    "throughput_fps": 36.543112508488115
+  }
+}
