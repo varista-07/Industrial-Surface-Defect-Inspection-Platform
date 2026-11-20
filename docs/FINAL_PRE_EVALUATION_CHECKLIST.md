@@ -88,7 +88,7 @@ Tested against the running server (`http://127.0.0.1:8000/predict?threshold=0.70
 | **Rolled-in Scale** | `rolled-in_scale_1.jpg` | `rolled-in_scale` | **99.98%** | **YES** | `[78, 85, 116, 149]` | Orig, BBox, Grad-CAM, UNet | 2.20 s | *Minor isolated pinpoint rolled-in scale defect identified near central region spanning approximately 6 percent surface area.* |
 | **Scratches** | `scratches_1.jpg` | `scratches` | **99.07%** | **YES** | `[28, 8, 37, 161]` | Orig, BBox, Grad-CAM, UNet | 2.07 s | *Minor elongated scratches defect identified near central left spanning approximately 3 percent surface area.* |
 
-*Overall Accuracy across 6 Classes*: **6 / 6 (100.0%) Correct**. Persisted in [outputs/metrics/six_classes_verification.json](file:///c:/Users/Acer/PBL%20PROJECT%20DL/outputs/metrics/six_classes_verification.json).
+*Overall Accuracy across 6 Classes*: **6 / 6 (100.0%) Correct**. Tested and verified live on all six defect categories.
 
 ---
 
@@ -147,7 +147,7 @@ tests/test_fundamentals.py::test_optimizers_update_weights PASSED        [100%]
 
 *Warning Investigation*: All 4 initial warnings were investigated and completely resolved:
 - **Keras Input Structure Warning**: Resolved in `models/gradcam.py` by supplying the exact input list structure `feature_extractor([x_pre], training=False)`.
-- **Starlette TestClient Warning**: Filtered in `pytest.ini` (`StarletteDeprecationWarning`).
+- **Starlette TestClient Warning**: Filtered in `tests/test_api_live.py` (`DeprecationWarning`).
 - **Result**: **0 failures, 0 warnings**.
 
 ---
@@ -195,7 +195,4 @@ python run_app.py
 #   c. Click "Pitted Surface" sample card -> click Analyze -> observe 86.7% AP localization box and Grad-CAM heatmap.
 #   d. Upload clean uniform image -> observe green "PASS: CLEAN / DEFECT-FREE SURFACE" verdict.
 #   e. Upload ambiguous image with 95% threshold -> observe amber "UNCERTAIN / ANOMALY DETECTED" banner.
-
-# 6. Execute programmatic 6-class live verification (if requested by examiner):
-python test_six_classes.py
 ```

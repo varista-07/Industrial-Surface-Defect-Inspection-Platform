@@ -17,6 +17,9 @@ import sys
 sys.path.insert(0, os.path.abspath("."))
 import io
 import json
+import warnings
+warnings.filterwarnings("ignore", message=".*Using `httpx` with `starlette.testclient` is deprecated.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="starlette.*")
 import pytest
 import numpy as np
 from PIL import Image
