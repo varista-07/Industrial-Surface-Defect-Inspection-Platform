@@ -55,7 +55,7 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="conv5_block3_ou
     
     with tf.GradientTape() as tape:
         # Forward pass through backbone up to last conv layer
-        conv_outputs = feature_extractor(x_pre, training=False)
+        conv_outputs = feature_extractor([x_pre], training=False)
         tape.watch(conv_outputs)
         
         # Forward pass through classification head

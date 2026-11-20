@@ -257,8 +257,13 @@ async def predict_surface_defect(
         try:
             det_preds = MODELS["detector"].predict(img_arr, verbose=0)
             pbox = det_preds["box_output"][0] # [ymin, xmin, ymax, xmax] in [0, 1]
-            ymin, xmin = int(pbox[0] * orig_h), int(pbox[1] * orig_w)
-            ymax, xmax = int(pbox[2] * orig_h), int(pbox[3] * orig_w)
+            raw_ymin, raw_xmin = int(pbox[0] * orig_h), int(pbox[1] * orig_w)
+            raw_ymax, raw_xmax = int(pbox[2] * orig_h), int(pbox[3] * orig_w)
+            # Enforce valid box ordering and image boundary constraints
+            xmin = max(0, min(raw_xmin, raw_xmax))
+            xmax = min(orig_w, max(raw_xmin, raw_xmax))
+            ymin = max(0, min(raw_ymin, raw_ymax))
+            ymax = min(orig_h, max(raw_ymin, raw_ymax))
             box_coords = [xmin, ymin, xmax, ymax]
             draw.rectangle([xmin, ymin, xmax, ymax], outline="#ef4444", width=3)
             draw.text((xmin + 4, max(0, ymin - 16)), f"{pred_class} ({confidence*100:.1f}%)", fill="#ef4444")

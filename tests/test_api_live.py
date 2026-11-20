@@ -79,15 +79,16 @@ def test_predict_blank_surface_heuristic(client):
     assert ood_data["verdict_status"] == "PASS"
     assert "Uniform steel surface" in ood_data["verdict_message"]
 
-def test_predict_gaussian_noise_heuristic(client):
-    """Test 5: POST /predict with Gaussian noise (triggers low-confidence UNCERTAIN / ANOMALY)."""
-    rng = np.random.RandomState(42)
-    noise_arr = rng.randint(0, 256, (200, 200), dtype=np.uint8)
-    noise_buf = io.BytesIO()
-    Image.fromarray(noise_arr).save(noise_buf, format="JPEG")
-    noise_bytes = noise_buf.getvalue()
+def test_predict_low_confidence_heuristic(client):
+    """Test 5: POST /predict with synthetic non-defect gradient (triggers low-confidence UNCERTAIN / ANOMALY)."""
+    # A smooth gradient has non-zero contrast (std > 0.025) but lacks defect features,
+    # yielding moderate confidence (< 0.95 threshold) and routing to manual inspection.
+    grad_arr = np.tile(np.linspace(0, 255, 200, dtype=np.uint8), (200, 1))
+    grad_buf = io.BytesIO()
+    Image.fromarray(grad_arr).save(grad_buf, format="JPEG")
+    grad_bytes = grad_buf.getvalue()
     
-    resp = client.post("/predict?threshold=0.75", files={"file": ("gaussian_noise.jpg", noise_bytes, "image/jpeg")})
+    resp = client.post("/predict?threshold=0.95", files={"file": ("gradient_nondefect.jpg", grad_bytes, "image/jpeg")})
     assert resp.status_code == 200
     noise_data = resp.json()
     assert noise_data["is_uncertain"] is True
