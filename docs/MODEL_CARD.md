@@ -97,7 +97,7 @@ Because the NEU-DET benchmark contains exclusively defective steel strip surface
 | **0.60** | 0 / 270 | **0.00%** | **0.00%** | Fully automated inspection; zero human escalation |
 | **0.70** | 0 / 270 | **0.00%** | **0.00%** | Fully automated inspection; zero human escalation |
 | **0.80** | 0 / 270 | **0.00%** | **0.00%** | High assurance; all 270 test samples accepted automatically |
-| **0.90** | 1 / 270 | **0.37%** | **0.37%** | Ultra-strict QA; 1 borderline crazing sample sent for human verification |
+| **0.90** | 0 / 270 | **0.00%** | **0.00%** | Ultra-strict QA; all 270 test samples exceed 90% confidence |
 
 ---
 

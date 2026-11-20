@@ -24,6 +24,7 @@ from PIL import Image, ImageOps, ImageDraw
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 import tensorflow as tf
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, UploadFile, Query, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -32,31 +33,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from models.gradcam import make_gradcam_heatmap, generate_gradcam_overlay
 from advanced.defect_transformer import generate_synthetic_report
 
-# Initialize FastAPI App
-app = FastAPI(
-    title="Industrial Surface Defect Inspection Platform",
-    description="Automated AI-powered quality inspection system for hot-rolled steel strip surface defects.",
-    version="1.0.0"
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Global model holders (loaded once at startup)
 MODELS = {
     "classifier": None,
     "detector": None,
     "unet": None,
-    "classes": ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
+    "classes": ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"],
+    "_is_loaded": False
 }
 
-@app.on_event("startup")
-def load_models_on_startup():
+def load_models_once():
+    """Idempotent model loader: loads deep neural networks exactly once into memory."""
+    if MODELS["_is_loaded"]:
+        return
     print("[SERVER] Initializing and loading inspection models into memory...")
     
     # Load class names
@@ -79,7 +68,6 @@ def load_models_on_startup():
     det_path = os.path.join("models", "checkpoints", "best_detector.keras")
     if os.path.exists(det_path):
         try:
-            # Custom objects for smooth_l1_loss
             MODELS["detector"] = tf.keras.models.load_model(det_path, compile=False)
             print(f"[SERVER] Successfully loaded Defect Detector from {det_path}")
         except Exception as e:
@@ -94,10 +82,36 @@ def load_models_on_startup():
         except Exception as e:
             print(f"[SERVER WARNING] Could not load U-Net: {e}")
             
+    MODELS["_is_loaded"] = True
     print("[SERVER] Startup initialization complete. Ready for live requests.")
 
-# Eagerly load models on module load so TestClient and server have immediate access
-load_models_on_startup()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Modern lifespan event handler for clean startup and shutdown."""
+    load_models_once()
+    yield
+
+# Initialize FastAPI App with lifespan context manager
+app = FastAPI(
+    title="Industrial Surface Defect Inspection Platform",
+    description="Automated AI-powered quality inspection system for hot-rolled steel strip surface defects.",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Secure CORS configuration: explicit origins required when allow_credentials=True
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def pil_to_base64_jpeg(pil_img):
     """Encodes PIL Image to Base64 JPEG data URL."""
@@ -109,6 +123,7 @@ def pil_to_base64_jpeg(pil_img):
 @app.get("/health")
 def health_check():
     """System health check endpoint."""
+    load_models_once()
     return {
         "status": "healthy",
         "service": "Industrial Surface Defect Inspection Platform",
@@ -143,6 +158,7 @@ async def predict_surface_defect(
     4. Evaluates Out-of-Distribution (OOD) / Uncertainty safety.
     """
     start_time = time.perf_counter()
+    load_models_once()
     
     # 1. Validation: File extension
     filename = file.filename.lower()
@@ -195,7 +211,9 @@ async def predict_surface_defect(
         cls_name: round(float(probs[i]) * 100.0, 2) for i, cls_name in enumerate(classes)
     }
     
-    # 5. Out-Of-Distribution (OOD) / Uncertainty & Defect-Free Surface Check
+    # 5. Low-Confidence & Uniform Surface Safety Check (Heuristic Quality Triage)
+    # Note: This is an operational heuristic (contrast standard deviation and confidence threshold),
+    # not a formal density-based epistemic Out-of-Distribution (OOD) estimator.
     img_contrast = float(np.std(img_arr))
     is_blank = bool(img_contrast < 0.025)
     is_uncertain = bool(confidence < threshold or is_blank)

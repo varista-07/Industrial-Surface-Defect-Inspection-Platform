@@ -126,11 +126,13 @@ Because NEU-DET contains solely defective samples, false-reject behavior is defi
 2. **Manual Triage Escalation Rate**: Fraction of images where model uncertainty warrants automatic escalation to a human QC inspector.
 
 Across all 270 test samples:
-* Threshold 0.50: **0.00%** triage rate (0/270 samples flagged)
-* Threshold 0.60: **0.00%** triage rate (0/270 samples flagged)
-* Threshold 0.70: **0.00%** triage rate (0/270 samples flagged)
-* Threshold 0.80: **0.00%** triage rate (0/270 samples flagged)
-* Threshold 0.90: **0.37%** triage rate (1/270 samples flagged for manual review)
+* Threshold 0.50: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+* Threshold 0.60: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+* Threshold 0.70: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+* Threshold 0.80: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+* Threshold 0.85: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+* Threshold 0.90: **0.00%** triage rate (0/270 samples flagged, silent escape rate 0.00%)
+All 270 test predictions under the fine-tuned ResNet50 model achieved softmax confidence $> 0.90$ with zero misclassifications on this test split.
 
 ---
 
@@ -142,10 +144,10 @@ Across all 270 test samples:
    - Generated 4-head self-attention heatmaps (`outputs/figures/transformer_attention_weights.png`) illustrating token focus on severity and morphology.
 2. **Convolutional Variational Autoencoder (Conv-VAE)**:
    - Trained on $64 \times 64$ defect crops with latent dimension $d = 32$ using the reparameterization trick $z = \mu + \sigma \odot \epsilon$.
-   - Final reconstruction loss: **2594.66**, KL divergence loss: **13.27**.
-   - 2D PCA projection of the latent space explains **79.16%** of total latent variance with clear defect clustering.
+   - Final reconstruction loss: **2609.86**, KL divergence loss: **10.73**.
+   - 2D PCA projection of the latent space explains high latent variance with clear defect clustering.
    - Sampled novel synthetic defects from random Gaussian prior $z \sim \mathcal{N}(0, \mathbf{I})$.
-   - **Synthetic Augmentation Test**: Evaluating classifier performance on 64x64 crops without synthetic data (57.04%) vs with 120 VAE synthetic samples (71.11%), showing a $+14.07\%$ delta on the small baseline model while noting mild blurring characteristics.
+   - **Leakage-Free Synthetic Augmentation Experiment**: Centroids were calculated strictly from the training split ($z_{\text{train}}$), eliminating test leakage. Baseline classifier without synthetic data achieved **73.33%** test accuracy; with 120 VAE-synthesized crops, test accuracy reached **56.67%** ($-16.67\%$ delta). Because the MSE-trained Conv-VAE generates smoothed reconstructions, it degrades high-frequency edge micro-textures crucial for defect discrimination. This provides genuine empirical proof that unconstrained VAE data augmentation can degrade fine industrial texture classification. Persisted in `outputs/metrics/vae_experiment_metrics.json`.
 
 ---
 
@@ -172,6 +174,6 @@ Across all 270 test samples:
 2. **Why fall back from RetinaNet to the multi-task detection head?**  
    Empirical benchmarking demonstrated that a single step of Keras-CV RetinaNet took 46.79 seconds for batch size 2 on CPU, requiring over 8 hours per epoch (81.8 hours for 10 epochs), severely violating the 30-minute training budget. The multi-task shared head achieved 21.2 ms latency (47.1 FPS) with 24.07% mAP@0.5 (86.67% on pitted surface).
 3. **How is the False-Reject Rate defined on a dataset without clean surfaces?**  
-   FRR is defined as the Missed Defect Rate ($\max P < \theta$) plus the Operator Triage Escalation Rate. At an 80% threshold, the triage rate is 0.00%; at a 90% threshold, only 1 of 270 test samples is escalated for human inspection.
+   FRR is operationalized through two metrics: (1) Operator Triage Escalation Rate ($\max P < \tau$, routing ambiguous strips to human inspection), and (2) Silent Escape Rate ($\hat{y} \neq y \land \max P \ge \tau$, misclassifications escaping notice). On this held-out test split, triage rate is 0.00% and silent escape rate is 0.00% across operational thresholds $\tau \le 0.90$ (all 270 test samples achieve confidence $> 0.90$).
 4. **Did you find any dataset anomalies in NEU-DET?**  
    A cryptographic hash audit revealed that `patches_101.jpg` and `patches_105.jpg` are 100% byte-for-byte identical images. Both duplicates were isolated strictly inside the Train split, guaranteeing zero cross-split leakage.

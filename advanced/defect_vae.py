@@ -230,8 +230,10 @@ def train_and_evaluate_vae(epochs=12, batch_size=32, latent_dim=32):
     n_synth = 120
     synth_z = np.random.randn(n_synth, latent_dim).astype(np.float32)
     synth_imgs = decoder.predict(synth_z, verbose=0)
-    # Assign pseudo-labels by nearest latent centroid
-    class_centroids = np.array([np.mean(z_mean_all[y_test == c], axis=0) for c in range(len(classes))])
+    
+    # Assign pseudo-labels by nearest latent centroid strictly using TRAINING data (ZERO test leakage)
+    z_mean_train, _, _ = encoder.predict(X_train, verbose=0)
+    class_centroids = np.array([np.mean(z_mean_train[y_train == c], axis=0) for c in range(len(classes))])
     synth_labels = [int(np.argmin(np.linalg.norm(class_centroids - z_s, axis=1))) for z_s in synth_z]
     
     X_aug = np.vstack([X_train, synth_imgs])

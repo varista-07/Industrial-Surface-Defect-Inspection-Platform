@@ -200,22 +200,22 @@
 * **Answer**: As shown in `outputs/figures/vae_reconstructions_and_latent_space.png`, the first two principal components explain **79.16% of total latent variance**. Defect classes form distinct spatial clusters: high-frequency crazing separates clearly from broad patches and linear scratches, demonstrating that the VAE captures fundamental morphological variance.
 
 #### Q7.5: What were the empirical results of training with synthetic VAE data augmentation?
-* **Answer**: We evaluated a baseline CNN on 64x64 crops without synthetic data (57.04% accuracy) versus training with 120 synthetic VAE samples added (71.11% accuracy), demonstrating a $+14.07\%$ improvement on small sample baselines. However, VAE samples exhibit mild high-frequency blurring due to Gaussian likelihood assumptions, indicating that diffusion models or GANs are preferable for production-grade image synthesis.
+* **Answer**: In our leakage-free experiment (`advanced/defect_vae.py`), class centroids were strictly computed on training data ($z_{\text{train}}$). Baseline classification on 64x64 crops without synthetic data achieved **73.33%** test accuracy. Adding 120 synthetic VAE samples resulted in **56.67%** test accuracy ($-16.67\%$ delta). Because the Conv-VAE optimizes an MSE pixel loss, its decodings suffer from high-frequency texture smoothing. Steel defect discrimination relies critically on crisp edge boundaries (e.g. sharp micro-cracks vs abrasions), so blurred synthetic samples introduced label noise that degraded performance. This is a crucial, honest engineering insight: vanilla VAEs are unsuitable for fine texture augmentation without perceptual or adversarial loss guidance. Persisted in `outputs/metrics/vae_experiment_metrics.json`.
 
 ---
 
 ### Module 8: Production Web Application & Safety
 
 #### Q8.1: How does the FastAPI asynchronous backend handle model loading and inference throughput?
-* **Answer**: All models (`best_resnet50.keras`, `best_detector.keras`, `best_unet.keras`) are preloaded into memory once at application startup. Subsequent `POST /predict` calls execute against the pre-warmed weights without disk I/O latency. Endpoints utilize asynchronous workers, serving live visual overlays and JSON payloads with sub-second response times.
+* **Answer**: All models (`best_resnet50.keras`, `best_detector.keras`, `best_unet.keras`) are loaded into memory once during application startup via a modern `@asynccontextmanager` `lifespan` handler with an idempotent singleton guard (`load_models_once()`), preventing redundant 450 MB re-allocations. Subsequent `POST /predict` calls execute against pre-warmed weights without disk I/O. Endpoints utilize asynchronous workers, serving live visual overlays and JSON payloads with sub-second response times.
 
 #### Q8.2: How does the dynamic confidence threshold slider function in production?
-* **Answer**: Line operators adjust the decision threshold $\tau \in [0.20, 0.95]$ (default: $0.60$). When an image is uploaded:
+* **Answer**: Line operators adjust the decision threshold $\tau \in [0.20, 0.95]$ (default: $0.70$). When an image is uploaded:
   - If $\max_c P(y=c|\mathbf{x}) \ge \tau$, the platform flags **QC FAIL: [DEFECT] DETECTED**, routing the steel coil to rework.
   - If $\max_c P(y=c|\mathbf{x}) < \tau$, the system triggers **UNCERTAIN / ANOMALY DETECTED**, holding the coil for manual visual inspection.
 
 #### Q8.3: Why is low-confidence thresholding not a true Out-of-Distribution (OOD) detector?
-* **Answer**: Softmax confidence thresholding simply monitors the peak output probability $\max P_k$. Deep neural networks often make overconfident mistakes on anomalous inputs due to linear decision boundaries far from training clusters. A true OOD detector evaluates Mahalanobis distance in latent feature space, energy scores, or reconstruction error under an autoencoder to identify distribution shifts reliably.
+* **Answer**: Softmax confidence thresholding simply monitors peak output probability $\max P_k$. Deep neural networks often make overconfident mistakes on anomalous inputs due to linear decision boundaries far from training clusters (e.g. high-frequency white noise triggers 100% confidence on pitted surface due to texture matching). A true OOD detector evaluates Mahalanobis distance in latent feature space, energy scores, or reconstruction error under an autoencoder to identify distribution shifts reliably.
 
 #### Q8.4: What input validation and security safeguards are implemented in the API?
 * **Answer**: The endpoint enforces strict defensive checks:
@@ -223,11 +223,11 @@
   2. **Payload Size Capping**: Rejects files exceeding 5 MB to prevent Denial of Service (DoS).
   3. **Corrupt File Interception**: Wraps Pillow image decoding in try-except blocks, rejecting malformed byte streams with HTTP 400.
   4. **Channel Normalization**: Automatically converts single-channel grayscale or RGBA inputs into standardized 3-channel RGB tensors.
+  5. **CORS Security**: Uses explicit local origin whitelisting (`localhost:8000`, `127.0.0.1:8000`, `localhost:3000`, `127.0.0.1:3000`) rather than insecure wildcards.
 
 #### Q8.5: How is False-Reject Rate (FRR) defined on NEU-DET, and what are its production consequences?
 * **Answer**: Because NEU-DET contains solely defective steel, False-Reject Rate is defined operationally as the **Missed Defect Rate** ($\max P < \theta$) plus the **Manual Triage Escalation Rate**. 
-  - On our test split, thresholds between 0.50 and 0.80 yield a **0.00% triage rate** (0 / 270 samples flagged).
-  - At an ultra-strict 0.90 threshold, the triage rate is **0.37%** (only 1 out of 270 samples is escalated).
+  - On our held-out test split, thresholds from 0.50 up to 0.90 yield a **0.00% triage rate** (all 270 test samples achieve softmax confidence $> 0.90$ with zero misclassifications).
   - In production, high triage rates bottleneck inspection lines with manual review, whereas low triage rates risk shipping unflagged defective steel to customers.
 
 ---

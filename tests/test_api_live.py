@@ -4,9 +4,12 @@ Automated End-to-End API and Model Testing for the Inspection Platform:
 1. Tests GET /health endpoint (system status, model availability).
 2. Tests GET /samples endpoint (sample gallery registry).
 3. Tests POST /predict with real NEU-DET defect images (normal flow).
-4. Tests POST /predict with uniform/random noise image to verify Out-of-Distribution (OOD) trigger.
-5. Tests input validation: unsupported file types (txt/pdf) and oversized file checks.
-6. Prints detailed execution results.
+4. Tests POST /predict with uniform low-contrast image (blank surface heuristic).
+5. Tests POST /predict with Gaussian noise image (low-confidence anomaly heuristic).
+6. Tests input validation: unsupported file types (txt/pdf).
+7. Tests input validation: corrupted image payload.
+8. Tests input validation: oversized file (> 5 MB).
+9. Tests model checkpoints existence and weight integrity.
 """
 
 import os
@@ -14,97 +17,113 @@ import sys
 sys.path.insert(0, os.path.abspath("."))
 import io
 import json
+import pytest
 import numpy as np
 from PIL import Image
 from fastapi.testclient import TestClient
 
 from app.main import app
 
-def run_api_tests():
-    print("=" * 65)
-    print("RUNNING AUTOMATED END-TO-END WEB API TESTS")
-    print("=" * 65)
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as test_client:
+        yield test_client
+
+def test_health_endpoint(client):
+    """Test 1: Health check endpoint returns status and verifies loaded models."""
+    resp = client.get("/health")
+    assert resp.status_code == 200, f"Health check failed: {resp.status_code}"
+    health_data = resp.json()
+    assert health_data["status"] == "healthy"
+    assert health_data["models_loaded"]["classifier"] is True, "Classifier failed to load!"
+    assert len(health_data["classes"]) == 6
+
+def test_samples_gallery_endpoint(client):
+    """Test 2: Sample gallery metadata endpoint."""
+    resp = client.get("/samples")
+    assert resp.status_code == 200
+    samples = resp.json()
+    assert isinstance(samples, list)
+    assert len(samples) > 0
+
+def test_predict_real_defect_image(client):
+    """Test 3: POST /predict with real NEU-DET defect image."""
+    sample_img_path = os.path.join("app", "static", "samples", "crazing_1.jpg")
+    if not os.path.exists(sample_img_path):
+        sample_img_path = os.path.join("data", "raw", "NEU-DET", "IMAGES", "crazing_1.jpg")
+        
+    with open(sample_img_path, "rb") as f:
+        img_bytes = f.read()
+        
+    resp = client.post("/predict?threshold=0.60", files={"file": ("crazing_1.jpg", img_bytes, "image/jpeg")})
+    assert resp.status_code == 200, f"Prediction failed: {resp.text}"
+    pred_data = resp.json()
+    assert pred_data["success"] is True
+    assert pred_data["predicted_class"] in ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
+    assert pred_data["confidence_percentage"] > 0
+    assert "visualizations" in pred_data
+    assert pred_data["visualizations"]["original_image"] is not None
+    assert pred_data["visualizations"]["gradcam_heatmap_overlay"] is not None
+
+def test_predict_blank_surface_heuristic(client):
+    """Test 4: POST /predict with uniform low-contrast surface (triggers is_blank / PASS)."""
+    blank_arr = np.full((200, 200), 128, dtype=np.uint8)
+    blank_buf = io.BytesIO()
+    Image.fromarray(blank_arr).save(blank_buf, format="JPEG")
+    blank_bytes = blank_buf.getvalue()
     
-    with TestClient(app) as client:
-        # 1. Test GET /health
-        print("\n[TEST 1] GET /health...")
-        resp = client.get("/health")
-        assert resp.status_code == 200, f"Health check failed: {resp.status_code}"
-        health_data = resp.json()
-        print(f"  Response: {health_data}")
-        assert health_data["status"] == "healthy"
-        assert health_data["models_loaded"]["classifier"] is True, "Classifier failed to load!"
-        print("  -> PASS: Health check endpoint functional and models confirmed loaded.")
-        
-        # 2. Test GET /samples
-        print("\n[TEST 2] GET /samples...")
-        resp = client.get("/samples")
-        assert resp.status_code == 200
-        samples = resp.json()
-        print(f"  Gallery samples loaded: {len(samples)}")
-        print("  -> PASS: Sample gallery endpoint functional.")
-        
-        # 3. Test POST /predict with Real Test Defect Image
-        print("\n[TEST 3] POST /predict with real defect image...")
-        sample_img_path = os.path.join("app", "static", "samples", "crazing_1.jpg")
-        if not os.path.exists(sample_img_path):
-            sample_img_path = os.path.join("data", "raw", "NEU-DET", "IMAGES", "crazing_1.jpg")
-            
-        with open(sample_img_path, "rb") as f:
-            img_bytes = f.read()
-            
-        resp = client.post("/predict?threshold=0.60", files={"file": ("crazing_1.jpg", img_bytes, "image/jpeg")})
-        assert resp.status_code == 200, f"Prediction failed: {resp.text}"
-        pred_data = resp.json()
-        print(f"  Predicted Class: {pred_data['predicted_class']}")
-        print(f"  Confidence:      {pred_data['confidence_percentage']}%")
-        print(f"  Verdict:         {pred_data['verdict']}")
-        print(f"  Inference Time:  {pred_data['inference_latency_ms']} ms")
-        print(f"  Inspection Note: '{pred_data['inspection_report']}'")
-        assert "visualizations" in pred_data
-        assert pred_data["visualizations"]["original_image"] is not None
-        assert pred_data["visualizations"]["gradcam_heatmap_overlay"] is not None
-        print("  -> PASS: Real defect prediction and explanation pipeline verified.")
-        
-        # 4. Test POST /predict with Out-of-Distribution (OOD) / Clean Uniform Image
-        print("\n[TEST 4] POST /predict with Out-of-Distribution clean / uniform surface...")
-        blank_arr = np.full((200, 200), 128, dtype=np.uint8)
-        blank_buf = io.BytesIO()
-        Image.fromarray(blank_arr).save(blank_buf, format="JPEG")
-        blank_bytes = blank_buf.getvalue()
-        
-        resp = client.post("/predict?threshold=0.75", files={"file": ("clean_surface.jpg", blank_bytes, "image/jpeg")})
-        assert resp.status_code == 200
-        ood_data = resp.json()
-        print(f"  Max Confidence:  {ood_data['confidence_percentage']}%")
-        print(f"  Is Uncertain:    {ood_data['is_uncertain']}")
-        print(f"  Verdict Status:  {ood_data['verdict_status']}")
-        print(f"  Verdict Message: {ood_data['verdict_message']}")
-        assert ood_data["is_uncertain"] is True
-        print("  -> PASS: OOD / Low-contrast safety fallback behavior verified.")
-        
-        # 5. Test Input Validation: Unsupported Format
-        print("\n[TEST 5] Input Validation: Unsupported file extension...")
-        fake_txt = io.BytesIO(b"Not an image")
-        resp = client.post("/predict", files={"file": ("report.pdf", fake_txt, "application/pdf")})
-        assert resp.status_code == 400
-        print(f"  Rejected status code: {resp.status_code} ({resp.json()['detail']})")
-        print("  -> PASS: Invalid extension successfully rejected.")
-        
-        # 6. Test Input Validation: Corrupted image data
-        print("\n[TEST 6] Input Validation: Corrupted image payload...")
-        corrupt_bytes = b"CORRUPTED_RAW_JPEG_HEADER_INVALID"
-        resp = client.post("/predict", files={"file": ("corrupt.jpg", corrupt_bytes, "image/jpeg")})
-        assert resp.status_code == 400
-        print(f"  Rejected status code: {resp.status_code} ({resp.json()['detail']})")
-        print("  -> PASS: Corrupt image successfully intercepted.")
-        
-        print("\n" + "=" * 65)
-        print("ALL API END-TO-END AND SECURITY TESTS PASSED (6/6)!")
-        print("=" * 65)
+    resp = client.post("/predict?threshold=0.75", files={"file": ("clean_surface.jpg", blank_bytes, "image/jpeg")})
+    assert resp.status_code == 200
+    ood_data = resp.json()
+    assert ood_data["is_uncertain"] is True
+    assert ood_data["verdict_status"] == "PASS"
+    assert "Uniform steel surface" in ood_data["verdict_message"]
 
-def test_api_live():
-    run_api_tests()
+def test_predict_gaussian_noise_heuristic(client):
+    """Test 5: POST /predict with Gaussian noise (triggers low-confidence UNCERTAIN / ANOMALY)."""
+    rng = np.random.RandomState(42)
+    noise_arr = rng.randint(0, 256, (200, 200), dtype=np.uint8)
+    noise_buf = io.BytesIO()
+    Image.fromarray(noise_arr).save(noise_buf, format="JPEG")
+    noise_bytes = noise_buf.getvalue()
+    
+    resp = client.post("/predict?threshold=0.75", files={"file": ("gaussian_noise.jpg", noise_bytes, "image/jpeg")})
+    assert resp.status_code == 200
+    noise_data = resp.json()
+    assert noise_data["is_uncertain"] is True
+    assert noise_data["verdict_status"] == "UNCERTAIN"
+    assert "below inspection threshold" in noise_data["verdict_message"]
 
-if __name__ == "__main__":
-    run_api_tests()
+def test_input_validation_unsupported_format(client):
+    """Test 6: Input Validation: Unsupported file extension (.pdf)."""
+    fake_txt = io.BytesIO(b"Not an image")
+    resp = client.post("/predict", files={"file": ("report.pdf", fake_txt, "application/pdf")})
+    assert resp.status_code == 400
+    assert "Unsupported file format" in resp.json()["detail"]
+
+def test_input_validation_corrupted_payload(client):
+    """Test 7: Input Validation: Corrupted image bytes."""
+    corrupt_bytes = b"CORRUPTED_RAW_JPEG_HEADER_INVALID"
+    resp = client.post("/predict", files={"file": ("corrupt.jpg", corrupt_bytes, "image/jpeg")})
+    assert resp.status_code == 400
+    assert "Corrupted or unreadable image file" in resp.json()["detail"]
+
+def test_input_validation_oversized_payload(client):
+    """Test 8: Input Validation: File exceeding maximum allowed size (> 5 MB)."""
+    oversized_bytes = b"0" * (6 * 1024 * 1024) # 6 MB
+    resp = client.post("/predict", files={"file": ("huge.jpg", oversized_bytes, "image/jpeg")})
+    assert resp.status_code == 413
+    assert "File exceeds maximum allowed size" in resp.json()["detail"]
+
+def test_model_checkpoints_exist_and_load():
+    """Test 9: Model checkpoints exist on disk and are not merely LFS pointer stubs."""
+    checkpoints = [
+        os.path.join("models", "checkpoints", "best_resnet50.keras"),
+        os.path.join("models", "checkpoints", "best_detector.keras"),
+        os.path.join("models", "checkpoints", "best_unet.keras")
+    ]
+    for ckpt in checkpoints:
+        assert os.path.exists(ckpt), f"Missing checkpoint: {ckpt}"
+        file_size_mb = os.path.getsize(ckpt) / (1024 * 1024)
+        # Ensure it is a real binary weight file, not a 130-byte Git LFS pointer text file
+        assert file_size_mb > 1.0, f"Checkpoint {ckpt} is suspiciously small ({file_size_mb:.4f} MB). Potential Git LFS pointer!"

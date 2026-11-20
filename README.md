@@ -177,14 +177,15 @@ Because every image in the NEU-DET dataset contains an industrial defect, standa
 
 ### False-Reject Rate Analysis on Test Split (270 Images)
 
-| Threshold ($\tau$) | Flagged for Triage | Triage Escalation Rate (Metric B) | Missed Defect Rate (Metric A) | Operational Status |
-|---|---|---|---|---|
-| **0.50** | 0 / 270 | **0.00%** | **0.00%** | Full Automated Pass-Through |
-| **0.60** | 0 / 270 | **0.00%** | **0.00%** | Full Automated Pass-Through |
-| **0.70** (Default) | 0 / 270 | **0.00%** | **0.00%** | Recommended Production Threshold |
-| **0.80** | 0 / 270 | **0.00%** | **0.00%** | Strict Operational Pass-Through |
-| **0.85** | 1 / 270 | **0.37%** | **0.37%** | High-Assurance Triage Active |
-| **0.90** | 3 / 270 | **1.11%** | **1.11%** | Conservative High-Assurance Triage |
+| Threshold ($\tau$) | Flagged for Triage | Triage Escalation Rate (Metric B) | Silent Escape Rate | Missed Defect Rate (Metric A) | Operational Status |
+|---|---|---|---|---|---|
+| **0.50** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Full Automated Pass-Through |
+| **0.60** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Full Automated Pass-Through |
+| **0.70** (Default) | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Recommended Production Threshold |
+| **0.80** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Strict Operational Pass-Through |
+| **0.85** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | High-Assurance Pass-Through |
+| **0.90** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Conservative High-Assurance Pass-Through |
+*All 270 test samples under the fine-tuned ResNet50 model achieve softmax confidence $> 0.90$ with zero misclassifications on this test split.*
 
 ---
 
@@ -203,11 +204,13 @@ The inspection platform automatically generates natural-language defect summarie
 * **Output**: Feeds domain-grounded contextual representations into the synthetic report generator.
 
 ### Convolutional VAE & Synthetic Augmentation
-* **Architecture**: Encoder with 3 strided conv layers ($64 \times 64 \times 1 \to 16$-dimensional latent space $\mathcal{N}(\mu, \sigma^2)$) and symmetric transpose conv decoder.
-* **Trained Objective**: $\mathcal{L}_{\text{VAE}} = \text{MSE}(x, \hat{x}) + \beta D_{\text{KL}}(q(z|x) \parallel p(z))$.
-* **Data Augmentation Experiment**: To test whether synthetic VAE generation improves low-data regime classification:
-  * Baseline MLP trained on 64x64 defect crops: **57.04% test accuracy**.
-  * MLP trained on Real + VAE-Synthesized defect crops: **71.11% test accuracy** (**$+14.07\%$ absolute improvement**).
+* **Architecture**: Encoder with 3 strided conv layers ($64 \times 64 \times 1 \to 32$-dimensional latent space $\mathcal{N}(\mu, \sigma^2)$) and symmetric transpose conv decoder (`advanced/defect_vae.py`).
+* **Trained Objective**: $\mathcal{L}_{\text{VAE}} = \text{MSE}(x, \hat{x}) + \beta D_{\text{KL}}(q(z|x) \parallel p(z))$. Final reconstruction loss: **2609.86**, KL loss: **10.73**.
+* **Leakage-Free Synthetic Augmentation Experiment**: To test whether unconditioned synthetic VAE generation improves low-data regime classification without test-set contamination:
+  * Class centroids in latent space were strictly computed on the training partition ($z_{\text{train}}$), eliminating test data leakage.
+  * Baseline MLP trained on 64x64 defect crops: **73.33% test accuracy**.
+  * MLP trained on Real + VAE-Synthesized defect crops: **56.67% test accuracy** (**$-16.67\%$ delta**).
+  * *Technical Analysis & Engineering Conclusion*: Conv-VAEs optimize continuous likelihood with an MSE reconstruction term, inevitably causing high-frequency texture smoothing. Industrial steel defect discrimination relies critically on micro-texture edge sharpness (e.g., differentiating delicate crazing fissures from surface scratches). Introducing blurred synthetic samples introduces label noise at texture boundaries, diminishing classifier accuracy. This provides valuable, transparent empirical evidence that vanilla pixel-space VAEs are unsuitable for fine-grained industrial texture augmentation without adversarial or perceptual loss supervision. Metrics are persisted in [vae_experiment_metrics.json](file:///c:/Users/Acer/PBL%20PROJECT%20DL/outputs/metrics/vae_experiment_metrics.json).
 
 ---
 

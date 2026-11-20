@@ -1,13 +1,13 @@
 {
   "model_name": "Convolutional Variational Autoencoder (Conv-VAE)",
-  "timestamp": "2026-11-16T23:33:41.453364",
+  "timestamp": "2026-11-20T17:51:09.468981",
   "latent_dimensions": 32,
-  "final_reconstruction_loss": 2594.65673828125,
-  "final_kl_loss": 13.273701667785645,
+  "final_reconstruction_loss": 2609.86474609375,
+  "final_kl_loss": 10.726511001586914,
   "synthetic_augmentation_test": {
-    "baseline_accuracy": 0.5703703761100769,
-    "augmented_accuracy": 0.7111111283302307,
-    "accuracy_delta_percent": 14.07407522201538,
+    "baseline_accuracy": 0.7333333492279053,
+    "augmented_accuracy": 0.5666666626930237,
+    "accuracy_delta_percent": -16.66666865348816,
     "conclusion": "VAE provides useful data exploration and latent visualization; marginal quantitative classification gain on 64x64 resolution."
   }
 }

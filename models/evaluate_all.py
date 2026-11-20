@@ -79,34 +79,65 @@ def run_evaluation():
     clf_dict = classification_report(y_true, y_pred, target_names=classes, output_dict=True)
     cm = confusion_matrix(y_true, y_pred).tolist()
 
-    # 5. Dual False-Reject Rate (FRR) & Triage Analysis
+    # 5. Dual False-Reject Rate (FRR) & Triage Analysis across Operating Thresholds
+    # In NEU-DET, all test samples contain defects. We define:
+    # - Triage Escalation Rate: proportion of samples routed to human review (max_prob < threshold)
+    # - Silent Escape Rate: proportion of misclassified samples that bypassed human triage (y_pred != y_true AND max_prob >= threshold)
+    # - Total Non-Pass Rate: proportion of samples requiring review or misclassified (y_pred != y_true OR max_prob < threshold)
     max_confs = np.max(y_pred_probs, axis=1)
-    thresholds = [0.50, 0.60, 0.70, 0.80, 0.90]
+    thresholds = [0.50, 0.60, 0.70, 0.80, 0.85, 0.90]
     frr_analysis = {}
+    total_samples = len(y_true)
     for th in thresholds:
-        uncertain_count = int(np.sum(max_confs < th))
-        triage_rate = float(uncertain_count / len(y_true))
+        flagged_mask = (max_confs < th)
+        flagged_count = int(np.sum(flagged_mask))
+        triage_rate = float(flagged_count / total_samples)
+        
+        silent_escape_mask = (y_pred != y_true) & (~flagged_mask)
+        silent_escape_count = int(np.sum(silent_escape_mask))
+        silent_escape_rate = float(silent_escape_count / total_samples)
+        
+        non_pass_mask = (y_pred != y_true) | flagged_mask
+        non_pass_count = int(np.sum(non_pass_mask))
+        total_non_pass_rate = float(non_pass_count / total_samples)
+        
         frr_analysis[f"threshold_{th:.2f}"] = {
             "threshold": th,
-            "flagged_samples": uncertain_count,
+            "flagged_for_triage": flagged_count,
             "triage_escalation_rate": triage_rate,
-            "missed_defect_rate": triage_rate
+            "silent_escape_count": silent_escape_count,
+            "silent_escape_rate": silent_escape_rate,
+            "total_non_pass_count": non_pass_count,
+            "total_non_pass_rate": total_non_pass_rate,
+            "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
         }
 
-    # 6. Load Secondary Detector & U-Net Metrics if available
-    detector_metrics = {}
+    # 6. Load Secondary Detector & U-Net Metrics from executed metric files (NO HARDCODED FALLBACKS)
     det_json = os.path.join("outputs", "metrics", "detector_test_metrics.json")
     if os.path.exists(det_json):
         with open(det_json, "r") as f:
-            detector_metrics = json.load(f).get("test_metrics", {})
+            det_data = json.load(f)
+            detector_metrics = det_data.get("test_metrics", det_data)
+        detector_source = det_json
+        print(f"[METRICS] Successfully loaded detector metrics from {det_json}")
+    else:
+        detector_metrics = {}
+        detector_source = "UNAVAILABLE - Run models/detector.py"
+        print(f"[WARNING] Detector metrics file not found at {det_json}.")
 
-    unet_metrics = {}
     unet_json = os.path.join("outputs", "metrics", "unet_test_metrics.json")
     if os.path.exists(unet_json):
         with open(unet_json, "r") as f:
-            unet_metrics = json.load(f).get("test_metrics", {})
+            unet_data = json.load(f)
+            unet_metrics = unet_data.get("test_metrics", unet_data)
+        unet_source = unet_json
+        print(f"[METRICS] Successfully loaded U-Net metrics from {unet_json}")
+    else:
+        unet_metrics = {}
+        unet_source = "UNAVAILABLE - Run models/unet_segmentation.py"
+        print(f"[WARNING] U-Net metrics file not found at {unet_json}.")
 
-    # 7. Export Unified JSON
+    # 7. Export Unified JSON (strictly real executed values, null if not executed)
     unified_metrics = {
         "report_name": "CSAI3027P Industrial Surface Defect Inspection Platform - Test Metrics",
         "timestamp": datetime.datetime.now().isoformat(),
@@ -125,16 +156,20 @@ def run_evaluation():
         },
         "defect_detector": {
             "architecture": "ResNet50 Multi-Task Shared Bounding Box Head",
-            "mAP_50": detector_metrics.get("mAP_50", 0.2407),
-            "mean_iou": detector_metrics.get("mean_iou", 0.3292),
-            "per_class_ap_50": detector_metrics.get("per_class_ap_50", {}),
-            "throughput_fps": detector_metrics.get("throughput_fps", 47.1)
+            "status": "Available" if detector_metrics else "Not evaluated",
+            "source_file": detector_source,
+            "mAP_50": detector_metrics.get("mAP_50"),
+            "mean_iou": detector_metrics.get("mean_iou"),
+            "per_class_ap_50": detector_metrics.get("per_class_ap_50"),
+            "throughput_fps": detector_metrics.get("throughput_fps")
         },
         "unet_segmentation": {
             "architecture": "Lightweight U-Net (ResNet Encoder, Weak Pseudo-Masks)",
-            "mean_iou": unet_metrics.get("mean_iou", 0.1292),
-            "dice_score": unet_metrics.get("mean_dice", 0.1950),
-            "throughput_fps": unet_metrics.get("throughput_fps", 36.5)
+            "status": "Available" if unet_metrics else "Not evaluated",
+            "source_file": unet_source,
+            "mean_iou": unet_metrics.get("mean_iou"),
+            "dice_score": unet_metrics.get("mean_dice", unet_metrics.get("dice_score")),
+            "throughput_fps": unet_metrics.get("throughput_fps")
         }
     }
 
@@ -146,7 +181,10 @@ def run_evaluation():
     print(f"\n[SUMMARY] Results on this test split ({len(test_records)} images):")
     print(f"  - Classifier Accuracy: {test_acc * 100:.2f}% (Macro F1: {macro_f1:.4f})")
     print(f"  - Latency per Image:   {mean_latency:.2f} ms ({fps:.1f} FPS on CPU)")
-    print(f"  - Detector mAP@0.5:    {unified_metrics['defect_detector']['mAP_50']*100:.2f}% (Mean IoU: {unified_metrics['defect_detector']['mean_iou']:.4f})")
+    if unified_metrics["defect_detector"]["mAP_50"] is not None:
+        print(f"  - Detector mAP@0.5:    {unified_metrics['defect_detector']['mAP_50']*100:.2f}% (Mean IoU: {unified_metrics['defect_detector']['mean_iou']:.4f})")
+    if unified_metrics["unet_segmentation"]["mean_iou"] is not None:
+        print(f"  - U-Net Pseudo IoU:    {unified_metrics['unet_segmentation']['mean_iou']:.4f} (Dice: {unified_metrics['unet_segmentation']['dice_score']:.4f})")
     print(f"[SAVE] Exported unified test metrics to {out_path}")
 
 if __name__ == "__main__":

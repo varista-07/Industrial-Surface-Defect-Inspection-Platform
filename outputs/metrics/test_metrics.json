@@ -1,6 +1,6 @@
 {
   "report_name": "CSAI3027P Industrial Surface Defect Inspection Platform - Test Metrics",
-  "timestamp": "2026-11-20T13:55:39.086284",
+  "timestamp": "2026-11-20T17:53:00.261172",
   "evaluation_dataset": "NEU-DET (Held-out Test Split)",
   "total_test_samples": 270,
   "primary_classifier": {
@@ -8,8 +8,8 @@
     "test_accuracy": 1.0,
     "test_accuracy_percentage": "100.00%",
     "test_macro_f1": 1.0,
-    "mean_latency_ms": 293.96,
-    "throughput_fps": 3.4,
+    "mean_latency_ms": 179.52,
+    "throughput_fps": 5.57,
     "per_class": {
       "crazing": {
         "precision": 1.0,
@@ -101,38 +101,70 @@
     "false_reject_rate_analysis": {
       "threshold_0.50": {
         "threshold": 0.5,
-        "flagged_samples": 0,
+        "flagged_for_triage": 0,
         "triage_escalation_rate": 0.0,
-        "missed_defect_rate": 0.0
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
       },
       "threshold_0.60": {
         "threshold": 0.6,
-        "flagged_samples": 0,
+        "flagged_for_triage": 0,
         "triage_escalation_rate": 0.0,
-        "missed_defect_rate": 0.0
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
       },
       "threshold_0.70": {
         "threshold": 0.7,
-        "flagged_samples": 0,
+        "flagged_for_triage": 0,
         "triage_escalation_rate": 0.0,
-        "missed_defect_rate": 0.0
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
       },
       "threshold_0.80": {
         "threshold": 0.8,
-        "flagged_samples": 0,
+        "flagged_for_triage": 0,
         "triage_escalation_rate": 0.0,
-        "missed_defect_rate": 0.0
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
+      },
+      "threshold_0.85": {
+        "threshold": 0.85,
+        "flagged_for_triage": 0,
+        "triage_escalation_rate": 0.0,
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
       },
       "threshold_0.90": {
         "threshold": 0.9,
-        "flagged_samples": 0,
+        "flagged_for_triage": 0,
         "triage_escalation_rate": 0.0,
-        "missed_defect_rate": 0.0
+        "silent_escape_count": 0,
+        "silent_escape_rate": 0.0,
+        "total_non_pass_count": 0,
+        "total_non_pass_rate": 0.0,
+        "definition_note": "Triage = max_prob < threshold; Silent Escape = wrong class & max_prob >= threshold."
       }
     }
   },
   "defect_detector": {
     "architecture": "ResNet50 Multi-Task Shared Bounding Box Head",
+    "status": "Available",
+    "source_file": "outputs\\metrics\\detector_test_metrics.json",
     "mAP_50": 0.24074074074074078,
     "mean_iou": 0.32922181977235054,
     "per_class_ap_50": {
@@ -147,6 +179,8 @@
   },
   "unet_segmentation": {
     "architecture": "Lightweight U-Net (ResNet Encoder, Weak Pseudo-Masks)",
+    "status": "Available",
+    "source_file": "outputs\\metrics\\unet_test_metrics.json",
     "mean_iou": 0.12923021614551544,
     "dice_score": 0.19504490494728088,
     "throughput_fps": 36.543112508488115
