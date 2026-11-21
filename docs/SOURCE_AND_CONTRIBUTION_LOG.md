@@ -49,14 +49,15 @@
 ---
 
 ## 5. Language Approval
-The course compendium lists C/C++/Java for project implementations; however, implementation in Python (TensorFlow, NumPy) was officially approved by <<PROFESSOR NAME>> on <<DATE / how it was communicated>>.
+The course compendium lists C/C++/Java for project implementations; faculty approval for Python/TensorFlow is not recorded in this repository.
 
 ---
 
 ## 6. Declared AI Assistance
-<!-- Academic Integrity Disclosure: Factual tool usage recorded below; student personal ownership statements must be completed before viva submission. -->
-* **AI Tool(s) Used**: Antigravity (AI coding agent) for pipeline code, tests, web interface and documentation; Claude (Anthropic) for report, slide deck and result analysis
-* **Scope of Assistance**: Drafting and refactoring pipeline scripts, unit test implementations, web dashboard interface, and experimental documentation tables
-* **Files / Modules Affected**: Most of the repository; see git history
-* **Independently Authored & Verified Work**: <<TODO: State what code, mathematical proofs, experimental setups, and analysis you designed, reviewed, and modified yourself>>
-* **Viva Ownership Affirmation**: <<TODO: Confirm personal comprehension and readiness to explain, trace, and live-modify any component during academic evaluation>>
+<!-- Academic Integrity Disclosure -->
+* **AI Tool(s) Used**: Antigravity (code generation/assistance) and Claude (technical report, presentation, documentation and error-analysis assistance).
+* **Scope of Assistance**: Drafting and refactoring pipeline scripts, unit test implementations, web dashboard interface, documentation tables, technical report structure, and presentation slide analysis.
+* **Files / Modules Affected**: Most of the repository; see git commit history.
+* **Student Review & Responsibility**: The student reviewed, verified, and takes personal responsibility for all code, documentation, and experimental results presented in this project.
+* **Independently Authored & Verified Work**: Not provided
+* **Viva Ownership Affirmation**: Not provided

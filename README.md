@@ -9,8 +9,7 @@
 An end-to-end deep learning quality assurance platform for automated hot-rolled steel strip surface defect classification, bounding-box localization, and visual explainability on the **NEU-DET** benchmark. Engineered for university PBL Project 02 (CSAI3027P Deep Learning, live evaluation 23 November 2026).
 
 ### Language Approval
-**STUDENT MUST FILL BEFORE SUBMISSION**:
-The course compendium lists C/C++/Java for project implementations; however, implementation in Python (TensorFlow, NumPy) was officially approved by <<PROFESSOR NAME>> on <<DATE / how it was communicated>>.
+The course compendium lists C/C++/Java for project implementations; faculty approval for Python/TensorFlow is not recorded in this repository.
 
 ---
 
