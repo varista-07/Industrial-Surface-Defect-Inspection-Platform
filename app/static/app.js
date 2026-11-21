@@ -194,10 +194,8 @@ function renderInspectionResults(data) {
   }
   metricSeverity.textContent = severity;
 
-  // Inspection Report Text (if element present)
-  if (inspectionReportText) {
-    inspectionReportText.textContent = data.inspection_report;
-  }
+  // Inspection Report Text
+  inspectionReportText.textContent = data.inspection_report;
 
   // Probability Bars
   probBarsContainer.innerHTML = "";
