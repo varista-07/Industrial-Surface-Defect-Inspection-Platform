@@ -59,5 +59,5 @@ The course compendium lists C/C++/Java for project implementations; faculty appr
 * **Scope of Assistance**: Drafting and refactoring pipeline scripts, unit test implementations, web dashboard interface, documentation tables, technical report structure, and presentation slide analysis.
 * **Files / Modules Affected**: Most of the repository; see git commit history.
 * **Student Review & Responsibility**: The student reviewed, verified, and takes personal responsibility for all code, documentation, and experimental results presented in this project.
-* **Independently Authored & Verified Work**: Not provided
-* **Viva Ownership Affirmation**: Not provided
+* **Independently Authored & Verified Work**: <PASTE MY FINAL TEXT HERE>
+* **Viva Ownership Affirmation**: <PASTE MY FINAL TEXT HERE>
