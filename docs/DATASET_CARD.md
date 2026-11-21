@@ -93,7 +93,7 @@ To eliminate cross-split contamination caused by the duplicate image pair:
    - $\text{Train} \cap \text{Validation} = \emptyset$ (0 collisions)
    - $\text{Train} \cap \text{Test} = \emptyset$ (0 collisions)
    - $\text{Validation} \cap \text{Test} = \emptyset$ (0 collisions)
-3. Audit output is programmatically validated and saved in [hash_audit.json](file:///c:/Users/Acer/PBL%20PROJECT%20DL/data/splits/hash_audit.json).
+3. Audit output is programmatically validated and saved in [hash_audit.json](data/splits/hash_audit.json).
 
 ---
 

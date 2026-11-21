@@ -238,19 +238,19 @@ If the examiner asks you to modify the platform live during evaluation:
 
 ### A. Adjusting the Confidence Threshold
 * **In the Web UI**: Drag the top slider (20% to 95%). The verdict card and distribution update instantly.
-* **In Code**: Open [app/main.py](file:///c:/Users/Acer/PBL%20PROJECT%20DL/app/main.py), line 89:
+* **In Code**: Open [app/main.py](app/main.py), line 89:
   ```python
   threshold: float = Query(0.60, ge=0.20, le=0.95)
   ```
 
 ### B. Changing Image Resolution
-* Open [models/dataset_loader.py](file:///c:/Users/Acer/PBL%20PROJECT%20DL/models/dataset_loader.py), line 42:
+* Open [models/dataset_loader.py](models/dataset_loader.py), line 42:
   ```python
   img_size = (200, 200) # Change to (224, 224) or (160, 160)
   ```
 
 ### C. Switching to InceptionV3 Benchmark Model
-* In [app/main.py](file:///c:/Users/Acer/PBL%20PROJECT%20DL/app/main.py), line 70:
+* In [app/main.py](app/main.py), line 70:
   ```python
   clf_path = os.path.join("models", "checkpoints", "best_inceptionv3.keras")
   ```

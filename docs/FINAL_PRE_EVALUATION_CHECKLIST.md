@@ -18,7 +18,7 @@ To launch the complete inspection platform with pre-warmed deep learning models:
 
 ```powershell
 # Step 1: Open terminal in workspace root
-cd "c:\Users\Acer\PBL PROJECT DL"
+cd "<project-root>"
 
 # Step 2: Activate the pinned Python virtual environment (Windows PowerShell)
 .venv\Scripts\Activate.ps1
@@ -121,7 +121,7 @@ pytest tests/ -v
 ============================= test session starts =============================
 platform win32 -- Python 3.12.8, pytest-9.2.0, pluggy-1.7.0 -- .venv\Scripts\python.exe
 cachedir: .pytest_cache
-rootdir: C:\Users\Acer\PBL PROJECT DL
+rootdir: <project-root>
 configfile: pytest.ini
 plugins: anyio-4.16.0
 collected 15 items
@@ -177,7 +177,7 @@ Follow this exact sequence during the live PBL demonstration:
 
 ```powershell
 # 1. Open Terminal and activate environment
-cd "c:\Users\Acer\PBL PROJECT DL"
+cd "<project-root>"
 .venv\Scripts\Activate.ps1
 
 # 2. Run all unit tests to prove test integrity before the examiner
