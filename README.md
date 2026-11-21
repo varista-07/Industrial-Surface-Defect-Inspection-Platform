@@ -343,10 +343,33 @@ PBL PROJECT DL/
 * **Domain Transfer Without Retraining**: Not calibrated for non-ferrous metals (aluminum, copper), composite surfaces, or weld seams without dataset retraining.
 * **Sub-Pixel Flaw Metrology**: Bounding box localization and pseudo-masks provide regional guidance and cannot replace calibrated optical interferometry or contact metrology.
 
-### Operational Limitations
-1. **Single-Box Localization**: The multi-task detector predicts one bounding box per image. It is unsuitable for precision multi-instance counting on dense defect clusters.
-2. **Weak Segmentation Resolution**: U-Net masks are trained on box-fill pseudo-labels and do not reflect true sub-millimeter flaw boundaries.
-3. **Resolution Downsampling**: Input images are downsampled to $200 \times 200$ pixels; microscopic hairline cracks smaller than 2 pixels may suffer loss of spatial fidelity.
+### Known Technical & Empirical Limitations
+
+All reported figures below are directly extracted from evaluated benchmark manifests in `outputs/metrics/` and `data/splits/`:
+
+1. **Classifier Test Split Performance (ResNet50)**:
+   - **Result**: **100.00% accuracy** on the 270 held-out test images (`outputs/metrics/resnet50_test_metrics.json`).
+   - **Data Split & Audit Guarantee**: Evaluated in strict isolation under a deterministic stratified 70/15/15 split (`SEED = 42`). Cryptographic SHA-256/MD5 auditing (`data/splits/hash_audit.json`) confirmed 0 image overlap across splits ($\text{Train} \cap \text{Val} = \emptyset$, $\text{Train} \cap \text{Test} = \emptyset$, $\text{Val} \cap \text{Test} = \emptyset$).
+   - **Benchmark Duplicate Pair**: Identified 1 exact byte-for-byte duplicate image pair in the official NEU-DET benchmark (`patches_101.jpg` and `patches_105.jpg`, SHA-256 `4d2de82...`). Both instances were deterministically quarantined strictly into the training split to guarantee zero test leakage.
+
+2. **Single-Box Object Detector Bottleneck**:
+   - **Result**: **mAP@0.5 = 24.07%** (`0.2407`), **Mean IoU = 0.3292**, **Throughput = 4.998 FPS** (~5.0 FPS, latency 200.07 ms) on CPU (`outputs/metrics/detector_test_metrics.json`).
+   - **Architecture Limitation**: The multi-task shared head predicts exactly one bounding box per image. However, 73.17% of NEU-DET images contain 2 or more defect instances (mean 2.33 boxes/image, up to 9 boxes), inherently capping mAP on multi-instance defect clusters. Per-class AP@50 ranges from 86.67% on isolated pitted surfaces down to 4.44% on multi-scratch surfaces.
+
+3. **Weak Pseudo-Mask Supervision in U-Net**:
+   - **Result**: **Mean IoU = 0.1292**, **Mean Dice Score = 0.1950** (`outputs/metrics/unet_test_metrics.json`).
+   - **Supervision Limitation**: Ground-truth pixel masks do not exist in NEU-DET. Target masks were weakly generated from rectangular VOC bounding boxes refined by Otsu thresholding. Quantitative metrics reflect alignment with weak heuristics rather than sub-millimeter human annotations.
+
+4. **Conv-VAE Synthetic Data Augmentation Degradation**:
+   - **Result**: Baseline MLP test accuracy on 64x64 defect crops: **73.33%** (`0.7333`); with 120 VAE-generated synthetic samples: **56.67%** (`0.5667`), representing a **$-16.67\%$ accuracy decrease** (`outputs/metrics/vae_experiment_metrics.json`).
+   - **Empirical Cause**: Pixel-space MSE loss causes high-frequency texture smoothing, introducing label noise at defect boundaries and degrading discrimination between fine micro-fissures (crazing) and linear abrasions (scratches).
+
+5. **From-Scratch Baseline MLP (NumPy)**:
+   - **Result**: **56.67% test accuracy** (Test Loss: `1.1545`) on 32x32 downsampled images (`outputs/metrics/baseline_mlp_metrics.json`). Serves as the foundational baseline demonstrating that shallow architectures without spatial convolutions cannot capture complex industrial surface morphology.
+
+6. **Synthetic Report Transformer Scope**:
+   - **Result**: **100.00% test accuracy** (Test Loss: `0.0003`, `outputs/metrics/transformer_test_metrics.json`).
+   - **Scope Limitation**: The Transformer Encoder was evaluated on synthetic domain reports procedurally constructed from Pascal VOC bounding box geometry, rather than messy, handwritten human operator inspection logs.
 
 ---
 
