@@ -36,7 +36,7 @@ In `outputs/metrics/inceptionv3_test_metrics.json`, InceptionV3 achieved 97.78% 
   - **Rolled-in Scale**: 42/45 correct (Recall: 93.33%, **3 False Negatives**; Precision: 100.0%, 0 False Positives).
   - **Scratches**: 45/45 correct (Recall: 100.0%, 0 False Negatives; Precision: 100.0%, 0 False Positives).
 
-*(Note: File-level image names for InceptionV3 are omitted from this document because live checkpoint inference evaluates to 7 errors due to borderline numerical floating-point precision on a single sample, whereas `inceptionv3_test_metrics.json` remains the source of truth for the 6 logged test errors).*
+*(Note: The recorded InceptionV3 training run reports 6 errors (97.78%). Re-scoring the saved best_inceptionv3.keras checkpoint from disk with tools/list_misclassified.py gives 7 errors (97.41%), a one-image difference (patches_204.jpg). The cause has not been traced. The training script evaluates the same weights that it saves, so the difference lies in the evaluation or loading path, or in the metrics file and checkpoint coming from different runs).*
 
 ---
 
