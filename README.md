@@ -318,8 +318,6 @@ PBL PROJECT DL/
 │   ├── DEPLOYMENT_RECOMMENDATION.md # Go/No-Go evidence-based production decision
 │   ├── RESPONSIBLE_AI.md          # Safety governance and human-in-the-loop fallback
 │   └── USER_GUIDE.md              # Interactive dashboard usage, setup, and API guide
-├── report/
-│   └── REPORT.md                  # University PBL formal technical report
 ├── tests/
 │   ├── test_fundamentals.py       # Automated unit tests on from-scratch modules
 │   └── test_api_live.py           # Automated end-to-end API and security tests
