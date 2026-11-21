@@ -317,7 +317,7 @@ PBL PROJECT DL/
 │   ├── ERROR_ANALYSIS.md          # Failure modes, confusion pairs, OOD behavior
 │   ├── DEPLOYMENT_RECOMMENDATION.md # Go/No-Go evidence-based production decision
 │   ├── RESPONSIBLE_AI.md          # Safety governance and human-in-the-loop fallback
-│   └── VIVA_PREP.md               # 40 viva defense Q&As + live code change cheat-sheet
+│   └── USER_GUIDE.md              # Interactive dashboard usage, setup, and API guide
 ├── report/
 │   └── REPORT.md                  # University PBL formal technical report
 ├── tests/
