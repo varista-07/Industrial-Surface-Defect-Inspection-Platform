@@ -101,4 +101,4 @@ To eliminate cross-split contamination caused by the duplicate image pair:
 
 1. **Resolution & Scale Invariance**: Native images are $200 \times 200$ pixels. High-speed continuous strip lines produce high-resolution line-scan streams ($2048 \times 4096$), necessitating a sliding-window patch extraction or tiling pipeline prior to inference.
 2. **Illumination Variability**: Directional lighting is relatively uniform across NEU-DET. Real factory environments introduce variable specular reflection, oil films, and sensor noise requiring online contrast normalization.
-3. **Absence of Clean Surfaces**: NEU-DET contains solely defective surfaces. In production, a two-stage filter using out-of-distribution detection (e.g., maximum softmax probability thresholding or reconstruction-error gating) must classify unblemished steel as "PASS" before defect localization.
+3. **Absence of Clean Surfaces**: NEU-DET contains solely defective surfaces. In production, a two-stage filter using low-confidence flagging (e.g., maximum softmax probability thresholding or texture-variance gating) must classify unblemished steel as "PASS" before defect localization.

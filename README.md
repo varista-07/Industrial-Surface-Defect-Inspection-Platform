@@ -9,6 +9,7 @@
 An end-to-end deep learning quality assurance platform for automated hot-rolled steel strip surface defect classification, bounding-box localization, and visual explainability on the **NEU-DET** benchmark. Engineered for university PBL Project 02 (CSAI3027P Deep Learning, live evaluation 23 November 2026).
 
 ### Language Approval
+**STUDENT MUST FILL BEFORE SUBMISSION**:
 The course compendium lists C/C++/Java for project implementations; however, implementation in Python (TensorFlow, NumPy) was officially approved by <<PROFESSOR NAME>> on <<DATE / how it was communicated>>.
 
 ---
@@ -65,6 +66,20 @@ To verify tensor operations, double-precision gradient checks, neural network op
 pytest tests/
 ```
 
+### Model Weights & Git LFS
+The four trained deep learning checkpoints total ~543 MB and are tracked with **Git LFS** (`.gitattributes`):
+* `models/checkpoints/best_resnet50.keras` (Classifier, ~211 MB)
+* `models/checkpoints/best_detector.keras` (Single-box detector, ~220 MB)
+* `models/checkpoints/best_inceptionv3.keras` (Benchmark classifier, ~90 MB)
+* `models/checkpoints/best_unet.keras` (Morphological segmentation, ~22 MB)
+
+Before running the application or evaluation scripts, ensure Git LFS is installed and weights are pulled:
+```bash
+git lfs install
+git lfs pull
+```
+All four `.keras` binary files must be present on disk in `models/checkpoints/` before launching the web inspection app.
+
 ### Hardware & Runtime Profile
 * **Target Hardware**: Intel Core CPU (x86_64), 16 GB RAM. Execution runs strictly in CPU mode (TensorFlow >= 2.11 does not support native Windows GPUs without WSL2 or DirectML).
 * **Classifier Training Time**: ~18.6 minutes on CPU (3 epochs frozen backbone Stage 1, 3 epochs fine-tuning Stage 2 with frozen BatchNorm).
@@ -78,14 +93,14 @@ pytest tests/
 | Module | Architecture / Method | Role in Platform | Primary Metric (Test Split) |
 |---|---|---|---|
 | **Classifier** | ResNet50 (2-Stage Transfer Learning) | Primary Defect Classification | **100.00% on this test split** (Seed 42) |
-| **Benchmark** | InceptionV3 Transfer Learning | Comparative Model Benchmark | **97.78% accuracy** (Macro F1: 0.9776) |
-| **Baseline** | From-Scratch NumPy MLP | Architectural Baseline | **57.04% accuracy** (Macro F1: 0.5512) |
+| **Benchmark** | InceptionV3 Transfer Learning | Comparative Model Benchmark | **97.78% accuracy** (Macro F1: 0.9778) |
+| **Baseline** | From-Scratch NumPy MLP | Architectural Baseline | **56.67% accuracy** (Test Loss: 1.1545) |
 | **Detector** | ResNet50 Multi-Task Shared Head | Single-Box Localization | **24.07% mAP@0.5**, **0.3292 Mean IoU** |
 | **Segmentation** | U-Net (ResNet Encoder) | Pixel-Level Defect Masks | **0.1292 Mean IoU**, **0.1950 Dice** (Weak Pseudo-Labels) |
 | **Explainability** | Grad-CAM (`conv5_block3_out`) | Visual Decision Attribution | Class-discriminative activation heatmaps |
 | **Safety Triage** | Confidence-Threshold Heuristic | Manual Review Flagging | Triages samples with $\max(P) < \tau$ |
 | **Report Engine** | Synthetic Natural Language Engine | Inspection Documentation | Spatial & geometric metadata reports |
-| **Synthesizer** | Convolutional VAE | Defect Reconstruction & Data Aug | $+14.07\%$ accuracy gain when augmenting MLP |
+| **Synthesizer** | Convolutional VAE | Defect Reconstruction & Data Aug | No reliable gain (smoothing degrades fine micro-textures) |
 
 ---
 
@@ -314,8 +329,8 @@ PBL PROJECT DL/
 │   ├── MODEL_CARD.md              # Intended use, limitations, metrics summary
 │   ├── SOURCE_AND_CONTRIBUTION_LOG.md # Citations, libraries, honest AI assistance record
 │   ├── ARCHITECTURE.md            # Layer-by-layer specifications and tensor shapes
-│   ├── ERROR_ANALYSIS.md          # Failure modes, confusion pairs, OOD behavior
-│   ├── DEPLOYMENT_RECOMMENDATION.md # Go/No-Go evidence-based production decision
+│   ├── ERROR_ANALYSIS.md          # Failure modes, confusion pairs, low-confidence flagging
+│   ├── DEPLOYMENT_RECOMMENDATION.md # Feasibility & advisory decision support assessment
 │   └── USER_GUIDE.md              # Interactive dashboard usage, setup, and API guide
 ├── tests/
 │   ├── test_fundamentals.py       # Automated unit tests on from-scratch modules
@@ -372,7 +387,7 @@ All reported figures below are directly extracted from evaluated benchmark manif
 
 ## 14. Academic Citation, Credits & Licensing
 
-* **Dataset Credit**: The NEU surface defect database is the property of Northeastern University, Shenyang, China. Published by:
+* **Dataset Credit**: NEU-DET (Song and Yan, 2013), academic use, verify the original license; MIT applies to the code only.
   > Song, K., & Yan, Y. (2013). *A noise robust method based on completed local binary patterns for hot-rolled steel strip surface defect detection*. Applied Surface Science, 285, 858-864.
-  *The dataset is utilized strictly for academic non-commercial research and educational evaluation.*
+  *NEU-DET is utilized strictly for academic non-commercial research and educational evaluation.*
 * **Code Licensing**: All source code, web interface components, model architectures, and training scripts authored for this course are released under the [MIT License](LICENSE).

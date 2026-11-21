@@ -15,14 +15,14 @@ flowchart TD
     Detector --> BBoxOut["Bounding Box Coordinates<br/>[ymin, xmin, ymax, xmax]"]
     UNet --> MaskOut["Binary Defect Mask<br/>(200 x 200 x 1)"]
     
-    ProbDist --> OOD_Engine{"Confidence >= Threshold?"}
-    OOD_Engine -->|Yes| VerdictFail["QC FAIL: Defect Confirmed"]
-    OOD_Engine -->|No| VerdictOOD["UNCERTAIN / ANOMALY<br/>Manual Human Review Flag"]
+    ProbDist --> TriageEngine{"Confidence >= Threshold?"}
+    TriageEngine -->|Yes| VerdictFail["QC FAIL: Defect Confirmed"]
+    TriageEngine -->|No| VerdictReview["UNCERTAIN / ANOMALY<br/>Manual Human Review Flag"]
     
     BBoxOut --> ReportGen["Synthetic Report Generator &<br/>Transformer Text Encoder"]
     
     VerdictFail --> WebUI["FastAPI Dashboard (http://localhost:8000)<br/>- Quad-View Visual Matrix<br/>- Probability Distribution<br/>- Natural Language Summary<br/>- Latency Readout"]
-    VerdictOOD --> WebUI
+    VerdictReview --> WebUI
     GradCAM --> WebUI
     MaskOut --> WebUI
 ```
@@ -53,7 +53,7 @@ flowchart TD
 ### 2.2 Dual-Head Defect Object Detector (`ResNet50_DefectDetector`)
 
 > [!NOTE]
-> **Detector Selection & Fallback**: Keras-CV RetinaNet with a ResNet50 backbone was benchmarked on CPU (`models/retinanet_benchmark.py`). With a measured step latency of **46.79 seconds for batch size 2** (~491 minutes/epoch, ~82 hours for 10 epochs), RetinaNet exceeded the 30-minute training limit. The system fell back to the multi-task shared-backbone architecture below, achieving **21.22 ms latency (47.1 FPS)** and **24.07% mAP@0.5** (**86.67% AP@0.5** on pitted surfaces).
+> **Detector Selection & Fallback**: Keras-CV RetinaNet with a ResNet50 backbone was benchmarked on CPU (`models/retinanet_benchmark.py`). With a measured step latency of **46.79 seconds for batch size 2** (~491 minutes/epoch, ~82 hours for 10 epochs), RetinaNet exceeded the 30-minute training limit. The system fell back to the multi-task shared-backbone architecture below, achieving **200.07 ms latency (5.00 FPS)** on CPU and **24.07% mAP@0.5** (**86.67% AP@0.5** on pitted surfaces).
 
 ```mermaid
 flowchart LR

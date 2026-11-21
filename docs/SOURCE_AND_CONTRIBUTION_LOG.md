@@ -54,9 +54,9 @@ The course compendium lists C/C++/Java for project implementations; however, imp
 ---
 
 ## 6. Declared AI Assistance
-<!-- Academic Integrity Disclosure: Please fill in the placeholders below truthfully before viva submission. -->
-* **AI Tool(s) Used**: <<TODO: e.g. Claude / ChatGPT / Gemini / Copilot / Cursor / Antigravity / None>>
-* **Scope of Assistance**: <<TODO: Specific description of what AI tools were used for, e.g. debugging syntax errors, formatting documentation tables, drafting boilerplate scripts>>
-* **Files / Modules Affected**: <<TODO: Specific files touched or generated with AI assistance, e.g. prepare_data.py, docs/USER_GUIDE.md, etc.>>
+<!-- Academic Integrity Disclosure: Factual tool usage recorded below; student personal ownership statements must be completed before viva submission. -->
+* **AI Tool(s) Used**: Antigravity (AI coding agent) for pipeline code, tests, web interface and documentation; Claude (Anthropic) for report, slide deck and result analysis
+* **Scope of Assistance**: Drafting and refactoring pipeline scripts, unit test implementations, web dashboard interface, and experimental documentation tables
+* **Files / Modules Affected**: Most of the repository; see git history
 * **Independently Authored & Verified Work**: <<TODO: State what code, mathematical proofs, experimental setups, and analysis you designed, reviewed, and modified yourself>>
 * **Viva Ownership Affirmation**: <<TODO: Confirm personal comprehension and readiness to explain, trace, and live-modify any component during academic evaluation>>

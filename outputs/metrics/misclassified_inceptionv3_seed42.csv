@@ -1,0 +1,8 @@
+file,true_class,predicted_class,confidence
+inclusion_251.jpg,inclusion,pitted_surface,0.759888
+inclusion_69.jpg,inclusion,patches,0.937713
+patches_204.jpg,patches,pitted_surface,0.722067
+pitted_surface_247.jpg,pitted_surface,patches,0.755096
+rolled-in_scale_276.jpg,rolled-in_scale,patches,0.704789
+rolled-in_scale_148.jpg,rolled-in_scale,crazing,0.565010
+rolled-in_scale_46.jpg,rolled-in_scale,patches,0.976178

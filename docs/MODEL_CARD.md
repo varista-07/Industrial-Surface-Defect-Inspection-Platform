@@ -4,104 +4,98 @@
 * **Developed By**: Student Engineering Team, CSAI3027P Deep Learning PBL Project 02.
 * **Evaluation Date**: 23 November 2026.
 * **Model Versions**:
-  - Primary Classifier: `ResNet50_DefectClassifier` (Two-stage transfer learning with ImageNet weights, Stage 1 frozen backbone, Stage 2 fine-tuning `conv5_block*` with all `BatchNormalization` layers explicitly frozen).
-  - Localization Model: `ResNet50_DefectDetector` (Multi-task Classification & Bounding Box Regression Head with Smooth L1 + Cross-Entropy Loss).
-  - Benchmark Models: `InceptionV3_Benchmark` and `From-Scratch MLP (NumPy)`.
+  - Primary Classifier: `ResNet50_DefectClassifier` (Two-stage transfer learning with ImageNet weights; Stage 1 frozen backbone, Stage 2 fine-tuning top residual blocks with all `BatchNormalization` layers explicitly frozen).
+  - Localization Model: `ResNet50_DefectDetector` (Documented single-box fallback: multi-task classification and bounding box regression head with Smooth L1 + Cross-Entropy Loss).
+  - Benchmark Models: `InceptionV3_Benchmark` (Frozen feature extractor) and `From-Scratch MLP (NumPy)`.
   - Segmentation: `Lightweight_UNet` (Trained on weak Otsu-derived pseudo-masks at $128 \times 128$).
-  - Generative & Language: `Conv-VAE` ($64 \times 64$) and `DefectReportTransformer` (4-head self-attention).
-* **Framework**: TensorFlow 2.21, Keras 3.15, Keras-CV 0.9.0, and pure NumPy.
+  - Generative & Language: `Conv-VAE` ($64 \times 64$) and `DefectReportTransformer` (4-head self-attention on synthetic report strings).
+* **Framework**: TensorFlow 2.21, Keras 3.15, and pure NumPy.
 * **License**: MIT Open Source for Academic Research.
 
 ---
 
-## 2. Intended Use
-* **Primary Intended Use**: Real-time automated inspection of hot-rolled steel strip surface defect images to identify defect class, localized bounding box, confidence score, and visual explainability heatmap.
-* **Primary Users**: Quality control engineers, line operators, and academic evaluators in manufacturing AI.
-* **Deployment Context**: Live interactive web platform (`http://localhost:8000`) integrated into post-rolling visual inspection stations.
+## 2. Intended Use & Deployment Context
+* **Intended Use**: Advisory decision support and visual inspection assistance for operators reviewing hot-rolled steel strip surface defect images. Provides predicted defect class, coarse single bounding box localization, and Grad-CAM visual explainability heatmaps.
+* **Target Users**: Quality control engineers and manual review station operators.
+* **Deployment Context**: Live interactive web platform (`http://localhost:8000`) designed for human-in-the-loop review.
 
 ---
 
-## 3. Quantitative Performance Summary (Test Set: 270 Unseen Images)
-
-All metrics reported below were empirically measured on the held-out test split (45 samples/class across 6 classes) with random seed 42:
-
-| Architecture | Model Paradigm | Input Resolution | Test Accuracy | Test Macro F1 | CPU Latency / Image | Throughput (FPS) |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **From-Scratch MLP** | Pure NumPy Backprop | $32 \times 32$ | 56.67% | 0.5480 | ~0.40 ms | ~2,500.0 FPS |
-| **InceptionV3 Benchmark** | Transfer Learning | $200 \times 200 \times 3$ | 97.78% | 0.9778 | 192.80 ms | 5.19 FPS |
-| **ResNet50 (Fine-Tuned)** | Two-Stage (Frozen BN) | $200 \times 200 \times 3$ | **100.00%** | **1.0000** | 318.95 ms | 3.13 FPS |
-| **Multi-Task Detector** | ResNet50 Shared Head | $200 \times 200 \times 3$ | 75.19% | 0.7410 | 21.22 ms | 47.12 FPS |
-| **U-Net Weak Segmentation**| ResNet Encoder (Otsu) | $128 \times 128 \times 3$ | — | Dice: 0.1950 | 27.40 ms | 36.50 FPS |
-| **Report Transformer** | 4-Head Self-Attention | Tokenized text | 100.00% | 1.0000 | ~2.10 ms | ~476.0 FPS |
-
-### Per-Class Performance Breakdown (Final ResNet50 Classifier)
-- **Crazing**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
-- **Inclusion**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
-- **Patches**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
-- **Pitted Surface**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
-- **Rolled-in Scale**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
-- **Scratches**: Precision: 100.0% | Recall: 100.0% | F1: 100.0%
+## 3. Non-Intended Use
+* **Fully Automated Release**: Must **NOT** be used as an autonomous, unmonitored gatekeeper for final product acceptance or release without certified human sign-off.
+* **Domain Transfer Without Retraining**: Not intended or validated for materials outside hot-rolled steel strips (e.g., cold-rolled steel, aluminum, copper alloys, silicon wafers, or welded seams) or under radically different camera sensors and factory lighting.
+* **Safety-Critical Certification**: Not intended for flight-critical aerospace, nuclear, or structural pressure-vessel component certification without accredited non-destructive testing (NDT) validation.
+* **Sub-Millimeter Flaw Metrology**: Bounding boxes and pseudo-masks provide regional guidance and must not be used for precision dimensional metrology or thickness measurement.
 
 ---
 
-## 4. Detection Architecture & Single-Stage RetinaNet Fallback Justification
+## 4. Quantitative Performance Summary (Held-Out Test Set: 270 Images)
 
-### Empirical Evaluation of RetinaNet (`keras-cv`)
-As specified in the project requirements, a single-stage RetinaNet with a ResNet50 backbone was implemented via `keras-cv` (`models/retinanet_benchmark.py`) to evaluate multi-box object detection across all VOC bounding boxes per image:
-1. **Computational Feasibility on CPU**:
-   - Step latency measured for mini-batch size 2: **46.79 seconds per step**.
-   - Projected training runtime for 1 single epoch (1,260 images / 630 steps): **491.2 minutes (~8.19 hours per epoch)**.
-   - For a standard 10-epoch training schedule, total CPU compute time would exceed **81.8 hours**, severely violating the user-stipulated 30-minute training time budget.
-2. **Framework Compatibility**:
-   - Keras-CV 0.9.0 exhibits internal data-unpacking incompatibilities with Keras 3 (`unpack_input` expecting 2-element tuples rather than Keras 3's 3-element `(x, y, sample_weight)` format).
-   - The Feature Pyramid Network (FPN) requires input dimensions strictly divisible by 32 (requiring padding from native $200 \times 200$ to $224 \times 224$ or $256 \times 256$, further compounding CPU FLOPs).
+All metrics below are read directly from `outputs/metrics/*.json`:
 
-### Justified Fallback to Multi-Task Detection Head
-In compliance with project directives, the platform fell back to a shared-backbone multi-task detection model (`models/detector.py`):
-- **Backbone**: Frozen ResNet50 feature extractor.
-- **Heads**: Simultaneous Softmax classification head + 4-coordinate bounding box regression head $[x_{\min}, y_{\min}, x_{\max}, y_{\max}]$ trained with Smooth L1 Loss.
-- **Benchmark Results on Test Set**:
-  - Overall Mean IoU: **0.3292**
-  - Overall mAP@0.5: **24.07%**
-  - Pitted Surface AP@0.5: **86.67%** (defect features crater-like localized contours well-captured by single-box localization)
-  - Inference Latency: **21.22 ms** (47.1 FPS throughput on CPU, supporting real-time industrial line rates).
+| Architecture | Model Paradigm | Input Resolution | Test Accuracy | Test Macro F1 | Measured CPU Latency | Throughput (FPS) | Primary Evaluation Metric |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **From-Scratch MLP** | Pure NumPy Backprop | $32 \times 32$ | 56.67% | Not saved | Not saved | Not saved | Test Loss: 1.1545 |
+| **InceptionV3 Benchmark** | Frozen Transfer Learning | $200 \times 200 \times 3$ | 97.78% | 0.9778 | 192.85 ms | 5.19 FPS | 264 / 270 correct |
+| **ResNet50 (Fine-Tuned)** | Two-Stage (Frozen BN) | $200 \times 200 \times 3$ | **100.00%** | **1.0000** | 179.52 ms<br/>*(logs: 260–319 ms)* | **5.57 FPS** | **270 / 270 correct on seed-42 split** |
+| **Multi-Task Detector** | ResNet50 Single-Box Head | $200 \times 200 \times 3$ | — | — | 200.07 ms | 5.00 FPS | **mAP@0.5: 24.07%**, Mean IoU: 0.3292 |
+| **U-Net Segmentation** | Lightweight U-Net | $128 \times 128 \times 3$ | — | — | 27.36 ms | 36.54 FPS | **Mean IoU: 0.1292**, Dice: 0.1950 (weak labels) |
+| **Report Transformer** | 4-Head Self-Attention | Text tokens | 100.00% | Not saved | Not saved | Not saved | Test Loss: 0.0003 (synthetic reports) |
 
----
+### Multi-Seed Classifier Robustness (ResNet50)
+Across 3 independent train/validation/test splits (`experiments/seed_robustness_results.json`):
+* **Seed 42**: 100.00% (270 / 270)
+* **Seed 101**: 95.93% (259 / 270, 11 misclassifications)
+* **Seed 202**: 97.04% (262 / 270, 8 misclassifications)
+* **Mean Accuracy**: **97.66% ± 2.10%** (std: 2.10 percentage points, standard error: 1.21 points)
+* **95% Confidence Interval**: **[92.43%, 100.00%]** ($t_{\text{crit}} = 4.3027, n=3$)
 
-## 5. Architectural Decision: Freezing BatchNormalization in ResNet50
-
-During Stage 2 fine-tuning of ResNet50 (`models/resnet50_classifier.py`), top convolutional blocks (`conv5_block1`, `conv5_block2`, `conv5_block3`) are unfrozen, but **all `BatchNormalization` layers remain strictly frozen (`layer.trainable = False`)**:
-
-$$\hat{x} = \frac{x - \mu_{\text{running}}}{\sqrt{\sigma^2_{\text{running}} + \epsilon}}, \quad y = \gamma \hat{x} + \beta$$
-
-### Theoretical and Practical Justification:
-1. **Mini-Batch Statistic Distortion**: In industrial transfer learning on CPU/small batches (batch size 16 or 32), calculating mini-batch sample mean $\mu_B$ and variance $\sigma^2_B$ introduces high sampling variance. Updating running statistics on small domain batches causes representation collapse and destroys pre-trained ImageNet features.
-2. **Gradient Variance Suppression**: Keeping BN layers in inference mode (`training=False`) treats them as fixed affine scalers. This stabilizes the backpropagation gradient flow through lower residual skip connections, preventing internal covariate shift during fine-tuning.
+### Per-Class Metrics Breakdown (ResNet50, Seed 42 Split)
+* **Crazing**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
+* **Inclusion**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
+* **Patches**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
+* **Pitted Surface**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
+* **Rolled-in Scale**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
+* **Scratches**: Precision: 1.000 | Recall: 1.000 | F1: 1.000 (Support: 45)
 
 ---
 
-## 6. Industrial False-Reject Rate (FRR) & Manual Triage Analysis
+## 5. Object Detection Architecture & Fallback Scope
 
-Because the NEU-DET benchmark contains exclusively defective steel strip surfaces (no clean/defect-free class), standard binary False Reject Rate (classifying good surface as defect) cannot be computed directly from class labels. We define and report two rigorous industrial metrics:
-
-### Metric Definitions:
-1. **Missed Defect Rate ($\text{FRR}_{\text{miss}}(\theta)$)**: Fraction of defective test samples whose top predicted probability fails to exceed confidence threshold $\theta$:
-   $$\text{FRR}_{\text{miss}}(\theta) = \frac{1}{N} \sum_{i=1}^N \mathbb{I}(\max_k P_{i,k} < \theta)$$
-2. **Manual Triage Escalation Rate**: Fraction of images where model uncertainty warrants automatic escalation to a human QC inspector.
-
-### Empirical Measurements on Test Set (270 Unseen Images):
-
-| Confidence Threshold ($\theta$) | Flagged Uncertain Samples | Triage Escalation Rate | Defect Miss Rate | Industrial QC Implication |
-| :---: | :---: | :---: | :---: | :--- |
-| **0.50** | 0 / 270 | **0.00%** | **0.00%** | Fully automated inspection; zero human escalation |
-| **0.60** | 0 / 270 | **0.00%** | **0.00%** | Fully automated inspection; zero human escalation |
-| **0.70** | 0 / 270 | **0.00%** | **0.00%** | Fully automated inspection; zero human escalation |
-| **0.80** | 0 / 270 | **0.00%** | **0.00%** | High assurance; all 270 test samples accepted automatically |
-| **0.90** | 0 / 270 | **0.00%** | **0.00%** | Ultra-strict QA; all 270 test samples exceed 90% confidence |
+* **Architecture**: ResNet50 backbone with a single-box multi-task prediction head (`models/detector.py`).
+* **Documented Fallback**: This model serves as an explicitly documented fallback. Single-stage RetinaNet (`models/retinanet_benchmark.py`) was evaluated on CPU; measured step latency was 46.79 seconds/step (>8.1 hours per epoch on CPU), exceeding practical training feasibility. RetinaNet was not trained for final deployment.
+* **Detector Performance**:
+  * Overall **mAP@0.5 = 24.07%** (`0.2407`), **Mean IoU = 0.3292**
+  * Per-class AP@0.5:
+    - Crazing: 22.22%
+    - Inclusion: 17.78%
+    - Patches: 6.67%
+    - Pitted Surface: 86.67%
+    - Rolled-in Scale: 6.67%
+    - Scratches: 4.44%
+* **Known Detection Bottleneck**: The single-box head predicts exactly one box per image. However, 73.17% of NEU-DET images contain $\ge 2$ defect instances (mean 2.33 boxes/image, up to 9 instances), which caps detection mAP on multi-instance clusters.
 
 ---
 
-## 7. Explainability & Human-in-the-Loop Safeguards
-1. **Grad-CAM Visual Heatmaps**: Every prediction generates a class-discriminative saliency heatmap indicating the exact spatial pixel groups that triggered the decision.
-2. **Confidence Threshold Slider**: Operators can modulate the decision threshold (e.g., 60%). Any prediction below the threshold is flagged as **UNCERTAIN / OUT-OF-DISTRIBUTION**, routing the steel strip to manual human review.
-3. **Out-of-Distribution Rejection**: Blank, uniform, or corrupted inputs are rejected with clear user-facing alerts rather than silently misclassified.
+## 6. Known Limitations
+
+1. **Weak Supervision in U-Net**: Evaluated against weak Otsu pseudo-masks generated from bounding boxes; true human pixel masks do not exist in NEU-DET.
+2. **Circular Transformer Evaluation**: The Report Transformer achieves 100.00% accuracy on synthetic inspection text generated deterministically from the same bounding box annotations as the labels.
+3. **No Gain from Generative VAE Augmentation**: In `experiments/experiment_log.csv`, VAE data augmentation produced conflicting results across runs (+14.07 points from 57.0% to 71.1% on initial run; -16.67 points from 73.3% to 56.7% on clean leakage-free run), demonstrating no reliable benefit due to pixel-space reconstruction smoothing fine edge textures.
+4. **Unmeasured True False-Reject Rate**: Because NEU-DET contains no clean/defect-free images, true false-reject rate cannot be measured.
+
+---
+
+## 7. Low-Confidence Flagging for Manual Review (Safeguards)
+
+1. **Low-Confidence Flagging**: The web interface implements a confidence threshold slider ($\tau \in [0.20, 0.95]$, default 0.60). Any sample scoring $\max P < \tau$ triggers an advisory alert (*"UNCERTAIN / ANOMALY DETECTED"*), routing the strip to an operator for visual verification.
+2. **Heuristic Nature**: This safeguard is a confidence-threshold and low-contrast texture heuristic ($\sigma < 0.025$), **NOT a true out-of-distribution (OOD) detector or density estimator**.
+3. **Explainability**: Grad-CAM visual heatmaps are generated alongside predictions to assist human review by displaying convolutional saliency patterns.
+
+---
+
+## 8. Ethical, Safety & Privacy Considerations
+
+* **Data Privacy**: The dataset consists entirely of microscopic grayscale optical photographs of industrial steel strip surfaces. It contains **no personally identifiable information (PII)**, human subjects, biometric data, or sensitive proprietary metadata.
+* **Worker Impact**: Designed strictly as an operator assistance tool to alleviate visual fatigue in repetitive manual quality inspection, not to eliminate human oversight.
+* **Environmental & Compute Cost**: Training was completed within academic CPU resource budgets with negligible carbon impact.
