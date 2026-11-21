@@ -34,8 +34,8 @@ def evaluate_and_list_misclassified():
     test_records = [r for r in manifest["records"] if r["split"] == "test"]
     print(f"[DATA] Loaded {len(test_records)} test records across {len(classes)} classes.")
 
-    # Pre-load all test images with identical preprocessing
-    print("[PREPROCESS] Pre-loading 270 test images (200x200, RGB, normalized /255.0)...")
+    # Pre-load all test images with identical preprocessing to models/dataset_loader.py
+    print("[PREPROCESS] Pre-loading 270 test images using tf.io / tf.image (200x200, RGB, [0, 1])...")
     images = []
     filenames = []
     true_classes = []
@@ -43,10 +43,12 @@ def evaluate_and_list_misclassified():
         img_path = r["image_path"]
         filenames.append(os.path.basename(img_path))
         true_classes.append(r["primary_class"])
-        with Image.open(img_path) as im:
-            im_resized = im.resize((200, 200))
-            im_arr = np.array(im_resized.convert("RGB"), dtype=np.float32) / 255.0
-            images.append(im_arr)
+        raw = tf.io.read_file(img_path)
+        img = tf.image.decode_jpeg(raw, channels=1)
+        img = tf.image.grayscale_to_rgb(img)
+        img = tf.image.resize(img, (200, 200))
+        img = tf.cast(img, tf.float32) / 255.0
+        images.append(img.numpy())
 
     x_test = np.stack(images, axis=0)
 
