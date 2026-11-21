@@ -198,7 +198,7 @@ Because every image in the NEU-DET dataset contains an industrial defect, standa
 |---|---|---|---|---|---|
 | **0.50** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Full Automated Pass-Through |
 | **0.60** (Default) | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Default Operational Threshold (Adjustable from 0.20 to 0.95) |
-| **0.70** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Recommended Production Threshold |
+| **0.70** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Stricter threshold (example only; not production-validated) |
 | **0.80** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Strict Operational Pass-Through |
 | **0.85** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | High-Assurance Pass-Through |
 | **0.90** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Conservative High-Assurance Pass-Through |
