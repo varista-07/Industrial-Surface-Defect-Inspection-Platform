@@ -60,7 +60,7 @@ Standard softmax classifiers suffer from overconfidence: when presented with non
 ### 4.2 Platform Mitigation Heuristics:
 1. **Low-Contrast Uniform Surface Heuristic**: Uploaded images are checked for low texture variance ($\sigma < 0.025$). Completely blank, uniform steel strip regions bypass the defect classifier and are assigned status `PASS: CLEAN / DEFECT-FREE SURFACE`.
 2. **Confidence Threshold Triage**: Predictions are evaluated against the operator threshold $\tau$ (default 0.60, adjustable from 0.20 to 0.95):
-   $$\text{Verdict} = \begin{cases} \text{QC FAIL (Defect Confirmed)}, & \text{if } \max_c P(y=c|\mathbf{x}) \ge \tau \\ \text{UNCERTAIN / ANOMALY DETECTED (Manual Review)}, & \text{if } \max_c P(y=c|\mathbf{x}) < \tau \end{cases}$$
+   $$\text{Verdict} = \begin{cases} \text{QC FAIL (Defect Confirmed)}, & \text{if } \max_c P(y=c|\mathbf{x}) \ge \tau \\ \text{low-confidence flagging (confidence-threshold rule)}, & \text{if } \max_c P(y=c|\mathbf{x}) < \tau \end{cases}$$
 
 ### 4.3 Honest Technical Disclosure:
 This operational safeguard is a **confidence-threshold and texture-variance heuristic, NOT a density-based out-of-distribution (OOD) detector**. It does not estimate epistemic uncertainty or data density in feature space. In an active production line, true out-of-distribution detection requires dedicated density models (e.g., Mahalanobis distance on latent feature vectors) trained on verified normal production steel.

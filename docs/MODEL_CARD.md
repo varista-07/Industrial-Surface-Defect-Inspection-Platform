@@ -88,7 +88,7 @@ Across 3 independent train/validation/test splits (`experiments/seed_robustness_
 
 ## 7. Low-Confidence Flagging for Manual Review (Safeguards)
 
-1. **Low-Confidence Flagging**: The web interface implements a confidence threshold slider (default 0.60, adjustable from 0.20 to 0.95). Any sample scoring $\max P < \tau$ triggers an advisory alert (*"UNCERTAIN / ANOMALY DETECTED"*), routing the strip to an operator for visual verification.
+1. **Low-Confidence Flagging**: The web interface implements a confidence threshold slider (default 0.60, adjustable from 0.20 to 0.95). Any sample scoring $\max P < \tau$ triggers an advisory alert (*low-confidence flagging (confidence-threshold rule)*), routing the strip to an operator for visual verification.
 2. **Heuristic Nature**: This safeguard is a confidence-threshold and low-contrast texture heuristic ($\sigma < 0.025$), **NOT a true out-of-distribution (OOD) detector or density estimator**.
 3. **Explainability**: Grad-CAM visual heatmaps are generated alongside predictions to assist human review by displaying convolutional saliency patterns.
 

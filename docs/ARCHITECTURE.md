@@ -17,7 +17,7 @@ flowchart TD
     
     ProbDist --> TriageEngine{"Confidence >= Threshold?"}
     TriageEngine -->|Yes| VerdictFail["QC FAIL: Defect Confirmed"]
-    TriageEngine -->|No| VerdictReview["UNCERTAIN / ANOMALY<br/>Manual Human Review Flag"]
+    TriageEngine -->|No| VerdictReview["low-confidence flagging (confidence-threshold rule)<br/>Manual Human Review Flag"]
     
     BBoxOut --> ReportGen["Synthetic Report Generator &<br/>Transformer Text Encoder"]
     
