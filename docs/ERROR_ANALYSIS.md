@@ -67,7 +67,7 @@ Standard softmax classifiers suffer from overconfidence: when presented with non
 
 ### 4.2 Platform Mitigation Heuristics:
 1. **Low-Contrast Uniform Surface Heuristic**: Uploaded images are checked for low texture variance ($\sigma < 0.025$). Completely blank, uniform steel strip regions bypass the defect classifier and are assigned status `PASS: CLEAN / DEFECT-FREE SURFACE`.
-2. **Confidence Threshold Triage**: Predictions are evaluated against the operator threshold $\tau \in [0.20, 0.95]$ (default $\tau = 0.60$):
+2. **Confidence Threshold Triage**: Predictions are evaluated against the operator threshold $\tau$ (default 0.60, adjustable from 0.20 to 0.95):
    $$\text{Verdict} = \begin{cases} \text{QC FAIL (Defect Confirmed)}, & \text{if } \max_c P(y=c|\mathbf{x}) \ge \tau \\ \text{UNCERTAIN / ANOMALY DETECTED (Manual Review)}, & \text{if } \max_c P(y=c|\mathbf{x}) < \tau \end{cases}$$
 
 ### 4.3 Honest Technical Disclosure:

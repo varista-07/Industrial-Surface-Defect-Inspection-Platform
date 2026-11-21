@@ -166,7 +166,7 @@ The resulting coarse 2D activation map ($7 \times 7$) is bilinearly upsampled to
 > [!NOTE]
 > **Heuristic Disclosure**: The "Low-confidence flagging for manual review" mechanism is a **confidence-threshold triage heuristic** ($\max_{c} P(y=c|x) < \tau$), **NOT a true Out-of-Distribution (OOD) density estimator**. It does not compute Mahalanobis distance in latent space, energy-based scores, or epistemic uncertainty via Monte Carlo dropout.
 
-* **Operational Function**: When an uploaded image yields a maximum softmax probability below the operator-selected threshold $\tau$ (default: $\tau = 0.70$), the system flags the sample with status `MANUAL_REVIEW_REQUIRED`, displays an alert banner on the web dashboard, and routes the steel strip for secondary manual quality inspection.
+* **Operational Function**: When an uploaded image yields a maximum softmax probability below the operator-selected threshold $\tau$ (default 0.60, adjustable from 0.20 to 0.95), the system flags the sample with status `MANUAL_REVIEW_REQUIRED`, displays an alert banner on the web dashboard, and routes the steel strip for secondary manual quality inspection.
 
 ---
 
@@ -198,8 +198,8 @@ Because every image in the NEU-DET dataset contains an industrial defect, standa
 | Threshold ($\tau$) | Flagged for Triage | Triage Escalation Rate (Metric B) | Silent Escape Rate | Missed Defect Rate (Metric A) | Operational Status |
 |---|---|---|---|---|---|
 | **0.50** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Full Automated Pass-Through |
-| **0.60** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Full Automated Pass-Through |
-| **0.70** (Default) | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Recommended Production Threshold |
+| **0.60** (Default) | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Default Operational Threshold (Adjustable from 0.20 to 0.95) |
+| **0.70** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Recommended Production Threshold |
 | **0.80** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Strict Operational Pass-Through |
 | **0.85** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | High-Assurance Pass-Through |
 | **0.90** | 0 / 270 | **0.00%** | **0.00%** | **0.00%** | Conservative High-Assurance Pass-Through |

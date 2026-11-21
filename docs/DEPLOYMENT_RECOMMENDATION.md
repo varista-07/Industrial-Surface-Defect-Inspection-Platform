@@ -50,7 +50,7 @@ All metrics below reflect real, verified measurements recorded in `outputs/metri
 6. **Uncalibrated Model Confidence**:
    - Raw softmax probabilities were not calibrated using temperature scaling, Platt scaling, or Expected Calibration Error (ECE) analysis.
 7. **Heuristic Low-Confidence Flagging**:
-   - Low-confidence and uniform-surface detection rely on an empirical texture variance threshold ($\sigma < 0.025$) and softmax cutoff ($\tau$), which is a heuristic safeguard rather than a true density-based out-of-distribution detector.
+   - Low-confidence and uniform-surface detection rely on an empirical texture variance threshold ($\sigma < 0.025$) and softmax cutoff ($\tau$, default 0.60, adjustable from 0.20 to 0.95), which is a heuristic safeguard rather than a true density-based out-of-distribution detector.
 
 ---
 
