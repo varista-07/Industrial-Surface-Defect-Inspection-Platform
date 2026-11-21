@@ -53,12 +53,10 @@ The course compendium lists C/C++/Java for project implementations; however, imp
 
 ---
 
-## 6. Record of AI Assistance (Antigravity AI Agent)
-In accordance with academic integrity and ethical engineering guidelines, all AI agent collaboration is transparently recorded:
-* **Assistance Scope**:
-  - Drafting and executing pipeline scripts (`prepare_data.py`, `fundamentals/`, `models/`, `advanced/`, `app/`).
-  - Mathematical derivation and double-precision numerical gradient verification of backpropagation equations.
-  - Designing responsive industrial QC CSS/HTML templates for the FastAPI inspection dashboard.
-  - Compiling experimental benchmark logs and metrics cards into standardized documentation.
-* **Student Verification & Defense Ownership**:
-  - The student has reviewed every line of source code, verified execution on local hardware, reproduced all figures and loss curves, and is fully prepared to defend mathematical formulations, hyperparameter trade-offs, and live code modifications in the academic viva.
+## 6. Declared AI Assistance
+<!-- Academic Integrity Disclosure: Please fill in the placeholders below truthfully before viva submission. -->
+* **AI Tool(s) Used**: <<TODO: e.g. Claude / ChatGPT / Gemini / Copilot / Cursor / Antigravity / None>>
+* **Scope of Assistance**: <<TODO: Specific description of what AI tools were used for, e.g. debugging syntax errors, formatting documentation tables, drafting boilerplate scripts>>
+* **Files / Modules Affected**: <<TODO: Specific files touched or generated with AI assistance, e.g. prepare_data.py, docs/USER_GUIDE.md, etc.>>
+* **Independently Authored & Verified Work**: <<TODO: State what code, mathematical proofs, experimental setups, and analysis you designed, reviewed, and modified yourself>>
+* **Viva Ownership Affirmation**: <<TODO: Confirm personal comprehension and readiness to explain, trace, and live-modify any component during academic evaluation>>
