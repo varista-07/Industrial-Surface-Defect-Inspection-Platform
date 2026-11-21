@@ -323,7 +323,7 @@ PBL PROJECT DL/
 ├── docs/                          # Academic Documentation & Defense Resources
 │   ├── DATASET_CARD.md            # NEU-DET specifications and distributions
 │   ├── MODEL_CARD.md              # Intended use, limitations, metrics summary
-│   ├── SOURCE_AND_CONTRIBUTION_LOG.md # Citations, libraries, honest AI assistance record
+│   ├── SOURCE_AND_CONTRIBUTION_LOG.md # Citations, libraries.
 │   ├── ARCHITECTURE.md            # Layer-by-layer specifications and tensor shapes
 │   ├── ERROR_ANALYSIS.md          # Failure modes, confusion pairs, low-confidence flagging
 │   ├── DEPLOYMENT_RECOMMENDATION.md # Feasibility & advisory decision support assessment
