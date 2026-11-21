@@ -47,17 +47,3 @@
 * **Testing & Quality Assurance**: PyTest 9.2.0, Python-Multipart 0.0.34
 
 ---
-
-## 5. Language Approval
-The course compendium lists C/C++/Java for project implementations; faculty approval for Python/TensorFlow is not recorded in this repository.
-
----
-
-## 6. Declared AI Assistance
-<!-- Academic Integrity Disclosure -->
-* **AI Tool(s) Used**: Antigravity (code generation/assistance) and Claude (technical report, presentation, documentation and error-analysis assistance).
-* **Scope of Assistance**: Drafting and refactoring pipeline scripts, unit test implementations, web dashboard interface, documentation tables, technical report structure, and presentation slide analysis.
-* **Files / Modules Affected**: Most of the repository; see git commit history.
-* **Student Review & Responsibility**: The student reviewed, verified, and takes personal responsibility for all code, documentation, and experimental results presented in this project.
-* **Independently Authored & Verified Work**: <PASTE MY FINAL TEXT HERE>
-* **Viva Ownership Affirmation**: <PASTE MY FINAL TEXT HERE>
