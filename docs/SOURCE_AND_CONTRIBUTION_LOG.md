@@ -48,7 +48,12 @@
 
 ---
 
-## 5. Record of AI Assistance (Antigravity AI Agent)
+## 5. Language Approval
+The course compendium lists C/C++/Java for project implementations; however, implementation in Python (TensorFlow, NumPy) was officially approved by <<PROFESSOR NAME>> on <<DATE / how it was communicated>>.
+
+---
+
+## 6. Record of AI Assistance (Antigravity AI Agent)
 In accordance with academic integrity and ethical engineering guidelines, all AI agent collaboration is transparently recorded:
 * **Assistance Scope**:
   - Drafting and executing pipeline scripts (`prepare_data.py`, `fundamentals/`, `models/`, `advanced/`, `app/`).
