@@ -1,0 +1,122 @@
+# User Guide: Industrial Surface Defect Inspection Platform
+
+The **Industrial Surface Defect Inspection Platform** is a web-based, AI-assisted quality control system designed for automated surface inspection of hot-rolled steel strips. It combines deep learning classification (ResNet50), bounding-box defect localization, explainable AI (Grad-CAM), and morphological segmentation into an operator-friendly web dashboard.
+
+---
+
+## 1. System Requirements & Prerequisites
+
+* **Operating System**: Windows 10/11, Ubuntu 20.04+, or macOS
+* **Python Runtime**: Python 3.12 (virtual environment recommended)
+* **Hardware**: Standard multi-core CPU (8 GB+ RAM); GPU optional (CPU inference latency is ~30–50 ms)
+* **Required Checkpoints**: Verify that `models/checkpoints/` contains:
+  * `best_resnet50.keras` (Classifier, ~210 MB)
+  * `best_detector.keras` (Single-box detector, ~220 MB)
+  * `best_unet.keras` (Morphological segmentation, ~22 MB)
+
+---
+
+## 2. Installation & Quickstart
+
+```bash
+# 1. Clone repository and navigate to root
+cd "<project-root>"
+
+# 2. Activate virtual environment
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# Linux / macOS Bash:
+# source .venv/bin/activate
+
+# 3. Install pinned dependencies (if not already installed)
+pip install -r requirements.txt
+
+# 4. Launch the inspection application
+python run_app.py
+```
+
+Open your browser and navigate to:
+* **Web Inspection Dashboard**: [http://localhost:8000](http://localhost:8000)
+* **Interactive API Documentation (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## 3. Web Dashboard Walkthrough
+
+### 3.1 Defect Sample Gallery (Quick Demonstration)
+The dashboard header displays a 6-defect sample gallery representing each defect category:
+* **Crazing**, **Inclusion**, **Patches**, **Pitted Surface**, **Rolled-in Scale**, and **Scratches**.
+* Click any sample thumbnail to pre-load that defect directly into the inspection buffer without having to browse local files.
+
+### 3.2 Custom Image Upload
+* Drag and drop any steel surface image into the upload drop-zone, or click **"Browse Files"**.
+* Supported formats: `.jpg`, `.jpeg`, `.png`, `.bmp` (maximum file size: 5 MB).
+* Images are automatically normalized and resized to $200 \times 200$ pixels upon submission.
+
+### 3.3 Confidence Threshold Slider
+* An interactive slider allows quality engineers to set the operational decision threshold $\tau \in [0.20, 0.95]$ (default: $0.60$).
+* **Verdict Logic**:
+  * **`QC FAIL (Defect Confirmed)`**: Maximum class confidence $\ge \tau$. The defect type and localization are certified.
+  * **`UNCERTAIN / ANOMALY (Manual Inspection Required)`**: Confidence $< \tau$. Triggers an operational warning banner recommending operator review.
+  * **`PASS (Clean / Defect-Free Surface)`**: Uniform texture heuristic ($\sigma < 0.025$) identifies non-defective steel strips.
+
+### 3.4 Visual Inspection Matrix (Quad-View)
+Upon clicking **"ANALYZE SURFACE DEFECT"**, the system presents a synchronized 4-panel visual breakdown:
+1. **Original Surface**: The raw preprocessed grayscale steel crop.
+2. **Defect Localization**: Predicted bounding box encapsulating the defect region with confidence score.
+3. **Grad-CAM Heatmap**: Saliency map highlighting the exact convolutional feature regions that influenced the classifier's verdict.
+4. **Morphological Mask**: U-Net pseudo-mask highlighting estimated defect contours.
+
+Below the images, a probability distribution bar chart displays the model's confidence scores across all 6 classes.
+
+---
+
+## 4. REST API Endpoints
+
+The FastAPI backend provides programmatically accessible endpoints for automated factory pipelines:
+
+| Endpoint | Method | Description | Parameters |
+|:---|:---:|:---|:---|
+| `/health` | `GET` | Health status and loaded model verification | None |
+| `/samples` | `GET` | Metadata for the 6 defect gallery samples | None |
+| `/predict` | `POST` | Full surface inspection pipeline | `file` (multipart form), `threshold` (float, query) |
+| `/docs` | `GET` | Interactive Swagger UI documentation | None |
+
+### Example API Request (cURL)
+```bash
+curl -X POST "http://localhost:8000/predict?threshold=0.70" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@data/raw/NEU-DET/IMAGES/crazing_1.jpg"
+```
+
+### Example Python Client
+```python
+import requests
+
+url = "http://localhost:8000/predict"
+params = {"threshold": 0.70}
+with open("data/raw/NEU-DET/IMAGES/patches_1.jpg", "rb") as fp:
+    response = requests.post(url, params=params, files={"file": fp})
+
+result = response.json()
+print("Predicted Defect:", result["predicted_class"])
+print("Confidence:", result["confidence"])
+print("Inspection Verdict:", result["verdict_status"])
+```
+
+---
+
+## 5. Troubleshooting & FAQ
+
+* **Port 8000 is already in use**:
+  If port 8000 is occupied by another process, launch on an alternative port:
+  ```bash
+  uvicorn app.main:app --host 0.0.0.0 --port 8080
+  ```
+* **First request latency**:
+  The first live inference call initializes TensorFlow graph compilation on CPU, taking 1–2 seconds. Subsequent requests execute in ~30–50 ms.
+* **Corrupt / Unsupported Image Error**:
+  If the API returns HTTP 400 or 413, check that the file is an uncorrupted image in JPEG/PNG format smaller than 5 MB.
+* **Stopping the Server**:
+  Press `Ctrl + C` in the terminal where `python run_app.py` is running to initiate a graceful shutdown.
